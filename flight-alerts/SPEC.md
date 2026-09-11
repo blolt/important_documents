@@ -1,7 +1,8 @@
 # DTW → MIA Fare Tracking & Alerting — Design Spec
 
-**Status:** Decisions made (§9). Sweep planner built and under test; decision
-engine and fetch shell pending an alert policy (§7).
+**Status:** Built end-to-end, 112 tests passing, running against fixtures.
+Awaiting API keys, a recorded live response, and the alert policy (§7).
+See README.md for the handoff checklist.
 **Date:** 2026-09-11
 
 ---
@@ -197,13 +198,32 @@ engineering choices.
 
 - [x] `models.py` — value types, dependency-free
 - [x] `sweep.py` — budget-aware date selection, `validate_budget()`
-- [x] `config.py` — tuned production config (4,500/mo)
-- [x] `tests/test_sweep.py` — 19 tests
-- [ ] `normalize.py` — SerpApi JSON → `Observation[]`
-- [ ] `decide.py` — alert gate (blocked on policy, §7)
-- [ ] `storage.py` — JSONL append
-- [ ] `notify.py` — ntfy publish
-- [ ] GitHub Actions workflow
+- [x] `config.py` — production config (4,500/mo) + pre-tuned two-call fallback
+- [x] `normalize.py` — SerpApi JSON → `Observation[]`, defensive throughout
+- [x] `decide.py` — alert gate + ranked per-sweep cap
+- [x] `storage.py` — append-only JSONL, monthly partitions
+- [x] `notify.py` — ntfy publishing
+- [x] `serpapi.py` — fetch shell, injected transport
+- [x] `cli.py` — `plan` / `sweep --dry-run` / `status`
+- [x] GitHub Actions — daily sweep + CI
+- [x] 112 tests
+
+Blocked on John (see README): `SERPAPI_KEY`, `NTFY_TOPIC`, one recorded live
+response to validate `normalize.py` against, and `policy.json` values.
+
+### Design issues the tests surfaced
+
+1. **Budget overrun.** The spec's original cadences needed 5,100 searches/month
+   against a 5,000 plan, and 1,020 against 1,000 one-way. Both would have
+   presented as a dead pipeline mid-month. Mid-band cadence widened 3→4 days.
+2. **Round-trip call count unknown.** If a round-trip total needs a second
+   `departure_token` call, cost doubles to 9,000/month. Modelled as
+   `calls_per_query` so `validate_budget()` refuses at startup instead, with
+   `FALLBACK_TWO_CALL` pre-tuned to 4,680/month.
+3. **Day-one alert storm.** With no history the cold-start path fires on every
+   itinerary — 150 notifications on first run, which trains you to ignore the
+   channel. Added `max_alerts_per_sweep`, ranked by bag-adjusted price so the
+   cap keeps the cheapest rather than the first fetched.
 
 ## 11. Capital One Venture
 

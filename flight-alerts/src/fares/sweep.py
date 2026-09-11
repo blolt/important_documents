@@ -60,11 +60,14 @@ def select_queries(today: date, config: SweepConfig) -> list[Query]:
     return queries
 
 
+def due_dates_per_day(config: SweepConfig) -> int:
+    return sum(1 for lead in range(1, config.horizon_days + 1)
+               if _is_due(lead, config.bands))
+
+
 def daily_estimate(config: SweepConfig) -> int:
-    """Searches consumed on a typical day."""
-    due = sum(1 for lead in range(1, config.horizon_days + 1)
-              if _is_due(lead, config.bands))
-    return due * config.queries_per_date
+    """API calls consumed on a typical day."""
+    return due_dates_per_day(config) * config.calls_per_date
 
 
 def monthly_estimate(config: SweepConfig) -> int:

@@ -1,0 +1,70 @@
+name: fares sweep
+
+on:
+  schedule:
+    # 13:00 UTC ~= 9am Detroit. Once daily: the sweep planner already
+    # decides which dates are due, so a second run would double spend
+    # without adding coverage.
+    - cron: '0 13 * * *'
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: 'Cap queries (leave blank for a full sweep)'
+        required: false
+      dry_run:
+        description: 'Use fixtures, write nothing'
+        type: boolean
+        default: false
+
+concurrency:
+  # Two sweeps at once would double-spend quota and race on the data commit.
+  group: fares-sweep
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: flight-alerts
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Sweep
+        env:
+          SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+        run: |
+          ARGS=""
+          [ -n "${{ inputs.limit }}" ] && ARGS="$ARGS --limit ${{ inputs.limit }}"
+          [ "${{ inputs.dry_run }}" = "true" ] && ARGS="$ARGS --dry-run"
+          PYTHONPATH=src python -m fares sweep $ARGS
+
+      - name: Summarize
+        run: PYTHONPATH=src python -m fares status >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Commit observations
+        if: ${{ inputs.dry_run != true }}
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/
+          if git diff --staged --quiet; then
+            echo "no new observations"
+            exit 0
+          fi
+          git commit -m "chore(fares): observations $(date -u +%Y-%m-%d) [skip ci]"
+          # Another run may have pushed since checkout; rebase rather than fail.
+          for attempt in 1 2 3 4; do
+            git pull --rebase --autostash origin "${GITHUB_REF_NAME}" && \
+              git push origin "HEAD:${GITHUB_REF_NAME}" && exit 0
+            sleep $((2 ** attempt))
+          done
+          echo "::error::could not push observations after 4 attempts"
+          exit 1

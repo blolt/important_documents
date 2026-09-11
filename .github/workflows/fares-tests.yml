@@ -1,0 +1,29 @@
+name: fares tests
+
+on:
+  push:
+    paths: ['flight-alerts/**', '.github/workflows/fares-*.yml']
+  pull_request:
+    paths: ['flight-alerts/**', '.github/workflows/fares-*.yml']
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: flight-alerts
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install pytest
+      - name: Run tests
+        run: PYTHONPATH=src python -m pytest -q
+      - name: Assert the sweep config fits its plan
+        # Guards against a config edit that would silently overrun the
+        # SerpApi quota partway through a billing month.
+        run: PYTHONPATH=src python -m fares plan
+      - name: Exercise the full pipeline against fixtures
+        run: PYTHONPATH=src python -m fares sweep --dry-run

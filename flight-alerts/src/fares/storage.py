@@ -1,0 +1,116 @@
+"""Append-only JSONL persistence, partitioned by month.
+
+Deliberately not SQLite: this data lives in git, and a binary file produces
+unreadable diffs on every commit. At ~4,500 observations/month the JSONL is
+kilobytes, and DuckDB reads it directly for later analysis.
+"""
+from __future__ import annotations
+
+import json
+from collections import defaultdict
+from datetime import date, datetime
+from pathlib import Path
+from typing import Iterable, Iterator
+
+from .models import Band, Observation
+from .sweep import lead_bucket
+
+OBSERVATIONS_DIR = "observations"
+ALERTS_FILE = "alerts.jsonl"
+
+
+def _iso(value: date | datetime | None) -> str | None:
+    return value.isoformat() if value is not None else None
+
+
+def to_record(obs: Observation) -> dict:
+    return {
+        "observed_at": _iso(obs.observed_at),
+        "depart": _iso(obs.depart),
+        "ret": _iso(obs.ret),
+        "price_usd": obs.price_usd,
+        "carrier": obs.carrier,
+        "stops": obs.stops,
+        "price_level": obs.price_level,
+        "typical_low": obs.typical_low,
+        "typical_high": obs.typical_high,
+    }
+
+
+def from_record(rec: dict) -> Observation:
+    return Observation(
+        observed_at=datetime.fromisoformat(rec["observed_at"]),
+        depart=date.fromisoformat(rec["depart"]),
+        ret=date.fromisoformat(rec["ret"]) if rec.get("ret") else None,
+        price_usd=rec["price_usd"],
+        carrier=rec["carrier"],
+        stops=rec["stops"],
+        price_level=rec.get("price_level"),
+        typical_low=rec.get("typical_low"),
+        typical_high=rec.get("typical_high"),
+    )
+
+
+def partition_for(moment: datetime) -> str:
+    return f"{moment:%Y-%m}.jsonl"
+
+
+def append(observations: Iterable[Observation], root: Path) -> int:
+    """Append observations to their month partitions. Returns rows written."""
+    by_partition: dict[str, list[Observation]] = defaultdict(list)
+    for obs in observations:
+        by_partition[partition_for(obs.observed_at)].append(obs)
+
+    written = 0
+    target = root / OBSERVATIONS_DIR
+    target.mkdir(parents=True, exist_ok=True)
+    for name, rows in by_partition.items():
+        with (target / name).open("a", encoding="utf-8") as fh:
+            for obs in rows:
+                fh.write(json.dumps(to_record(obs), separators=(",", ":")) + "\n")
+                written += 1
+    return written
+
+
+def read_all(root: Path) -> Iterator[Observation]:
+    """Stream every stored observation, oldest partition first."""
+    target = root / OBSERVATIONS_DIR
+    if not target.exists():
+        return
+    for path in sorted(target.glob("*.jsonl")):
+        with path.open(encoding="utf-8") as fh:
+            for line in fh:
+                line = line.strip()
+                if line:
+                    yield from_record(json.loads(line))
+
+
+def history_by_bucket(root: Path, bands: tuple[Band, ...]) -> dict[int, list[int]]:
+    """Prices grouped by lead-time bucket -- the comparison set for percentiles.
+
+    Grouping matters: a $180 fare 3 days out and a $180 fare 80 days out are
+    not comparable observations, and pooling them would wash out the signal.
+    """
+    buckets: dict[int, list[int]] = defaultdict(list)
+    for obs in read_all(root):
+        buckets[lead_bucket(obs.lead_days, bands)].append(obs.price_usd)
+    return dict(buckets)
+
+
+def record_alert(obs: Observation, price: int, sent_at: datetime, root: Path) -> None:
+    root.mkdir(parents=True, exist_ok=True)
+    with (root / ALERTS_FILE).open("a", encoding="utf-8") as fh:
+        fh.write(json.dumps({
+            "sent_at": _iso(sent_at),
+            "depart": _iso(obs.depart),
+            "ret": _iso(obs.ret),
+            "price_usd": price,
+        }, separators=(",", ":")) + "\n")
+
+
+def read_alerts(root: Path) -> list[dict]:
+    path = root / ALERTS_FILE
+    if not path.exists():
+        return []
+    with path.open(encoding="utf-8") as fh:
+        return [json.loads(line) for line in fh if line.strip()]

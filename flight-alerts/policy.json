@@ -1,0 +1,18 @@
+{
+  "_comment": "John: these are placeholders. Set them to your real preferences.",
+
+  "ceiling_usd": 300,
+  "percentile": 0.10,
+  "debounce_hours": 24,
+
+  "nonstop_only": false,
+  "excluded_carriers": [],
+
+  "_bag_fee_note": "Per-carrier checked/carry-on fee, added before comparing. Set NK/F9 if you'd check a bag; leave empty if you never do.",
+  "bag_fee_usd": {},
+
+  "min_history": 5,
+
+  "_cap_note": "Day one has no history, so the cold-start path can fire on every itinerary. This caps alerts per sweep, keeping the cheapest.",
+  "max_alerts_per_sweep": 5
+}

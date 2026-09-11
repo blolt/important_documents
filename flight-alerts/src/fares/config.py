@@ -31,4 +31,63 @@ PRODUCTION = SweepConfig(
     bands=BANDS,
     monthly_budget=SERPAPI_DEVELOPER_TIER,
     return_offsets=RETURN_OFFSETS,
+    calls_per_query=1,
 )
+
+# If a round-trip total turns out to need a second call per itinerary
+# (departure_token), PRODUCTION needs 9,000/month and fails validation at
+# startup. This is the pre-tuned replacement: narrower near band, 5-day
+# mid cadence, three return offsets => 4,680/month at two calls each.
+# Swap PRODUCTION for this and nothing else changes.
+NARROW_BANDS = (
+    Band(max_lead_days=12, cadence_days=1),
+    Band(max_lead_days=60, cadence_days=5),
+    Band(max_lead_days=90, cadence_days=7),
+)
+
+FALLBACK_TWO_CALL = SweepConfig(
+    horizon_days=90,
+    bands=NARROW_BANDS,
+    monthly_budget=SERPAPI_DEVELOPER_TIER,
+    return_offsets=(4, 5, 6),
+    calls_per_query=2,
+)
+
+
+# --- Alert policy -----------------------------------------------------------
+# These are placeholders awaiting John's actual travel preferences (SPEC.md §7).
+# Edit policy.json rather than this file; these are the fallbacks if it is absent.
+DEFAULT_POLICY = {
+    "ceiling_usd": 300,
+    "percentile": 0.10,
+    "debounce_hours": 24,
+    "nonstop_only": False,
+    "excluded_carriers": [],
+    # A $59 Spirit fare with a $75 bag is not a $59 fare. Zero here means
+    # "carry-on included or I don't check one" -- set per carrier as needed.
+    "bag_fee_usd": {},
+    "min_history": 5,
+    "max_alerts_per_sweep": 5,
+}
+
+
+def load_policy(path=None):
+    """Policy from JSON, falling back to DEFAULT_POLICY."""
+    import json
+    from pathlib import Path
+
+    from .models import Policy
+
+    raw = dict(DEFAULT_POLICY)
+    if path is not None and Path(path).exists():
+        raw.update(json.loads(Path(path).read_text()))
+    return Policy(
+        ceiling_usd=int(raw["ceiling_usd"]),
+        percentile=float(raw["percentile"]),
+        debounce_hours=int(raw["debounce_hours"]),
+        nonstop_only=bool(raw["nonstop_only"]),
+        excluded_carriers=frozenset(raw["excluded_carriers"]),
+        bag_fee_usd={k: int(v) for k, v in raw["bag_fee_usd"].items()},
+        min_history=int(raw["min_history"]),
+        max_alerts_per_sweep=int(raw["max_alerts_per_sweep"]),
+    )

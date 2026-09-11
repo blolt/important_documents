@@ -29,10 +29,19 @@ class SweepConfig:
     bands: tuple[Band, ...]
     monthly_budget: int
     return_offsets: tuple[int, ...] = ()  # empty => one-way
+    # SerpApi may require a second call (departure_token) to resolve a
+    # round-trip total. Unverified -- see SPEC.md §12. Modelled as a
+    # parameter so the budget math is right either way rather than
+    # discovering a 2x overrun in production.
+    calls_per_query: int = 1
 
     @property
     def queries_per_date(self) -> int:
         return len(self.return_offsets) or 1
+
+    @property
+    def calls_per_date(self) -> int:
+        return self.queries_per_date * self.calls_per_query
 
 
 @dataclass(frozen=True)
@@ -67,6 +76,9 @@ class Policy:
     excluded_carriers: frozenset[str] = frozenset()
     bag_fee_usd: dict[str, int] = field(default_factory=dict)
     min_history: int = 5              # below this, percentile rank is not meaningful
+    # Day one has no history, so the cold-start path can fire on every
+    # itinerary in the sweep. Cap it, keeping the cheapest.
+    max_alerts_per_sweep: int = 5
 
 
 @dataclass(frozen=True)

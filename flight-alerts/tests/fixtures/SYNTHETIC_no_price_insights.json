@@ -1,0 +1,15 @@
+{
+  "_fixture_note": "SYNTHETIC. Models a response where price_insights is absent -- a documented possibility the cold-start path depends on handling.",
+  "search_parameters": {"engine": "google_flights", "departure_id": "DTW", "arrival_id": "MIA"},
+  "best_flights": [
+    {
+      "flights": [
+        {"departure_airport": {"id": "DTW"}, "arrival_airport": {"id": "MIA"},
+         "airline": "Delta", "flight_number": "DL 1421"}
+      ],
+      "layovers": [],
+      "price": 266,
+      "type": "Round trip"
+    }
+  ]
+}

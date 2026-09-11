@@ -1,0 +1,71 @@
+{
+  "_fixture_note": "SYNTHETIC. Hand-built from SerpApi's documented response shape, not a recorded live call. Replace with a real recorded response; see README.",
+  "search_parameters": {
+    "engine": "google_flights",
+    "departure_id": "DTW",
+    "arrival_id": "MIA",
+    "outbound_date": "2026-11-14",
+    "return_date": "2026-11-19",
+    "currency": "USD",
+    "type": "1"
+  },
+  "best_flights": [
+    {
+      "flights": [
+        {
+          "departure_airport": {"id": "DTW", "time": "2026-11-14 08:15"},
+          "arrival_airport": {"id": "MIA", "time": "2026-11-14 11:22"},
+          "airline": "Delta",
+          "flight_number": "DL 1421",
+          "airplane": "Airbus A321"
+        }
+      ],
+      "layovers": [],
+      "total_duration": 187,
+      "price": 214,
+      "type": "Round trip"
+    },
+    {
+      "flights": [
+        {
+          "departure_airport": {"id": "DTW", "time": "2026-11-14 06:00"},
+          "arrival_airport": {"id": "CLT", "time": "2026-11-14 08:05"},
+          "airline": "American",
+          "flight_number": "AA 1932"
+        },
+        {
+          "departure_airport": {"id": "CLT", "time": "2026-11-14 09:40"},
+          "arrival_airport": {"id": "MIA", "time": "2026-11-14 11:35"},
+          "airline": "American",
+          "flight_number": "AA 2201"
+        }
+      ],
+      "layovers": [{"duration": 95, "name": "Charlotte Douglas", "id": "CLT"}],
+      "total_duration": 335,
+      "price": 198,
+      "type": "Round trip"
+    }
+  ],
+  "other_flights": [
+    {
+      "flights": [
+        {
+          "departure_airport": {"id": "DTW", "time": "2026-11-14 19:30"},
+          "arrival_airport": {"id": "MIA", "time": "2026-11-14 22:44"},
+          "airline": "Spirit",
+          "flight_number": "NK 285"
+        }
+      ],
+      "layovers": [],
+      "total_duration": 194,
+      "price": 96,
+      "type": "Round trip"
+    }
+  ],
+  "price_insights": {
+    "lowest_price": 96,
+    "price_level": "low",
+    "typical_price_range": [180, 320],
+    "price_history": [[1757548800, 240], [1757635200, 231], [1757721600, 214]]
+  }
+}

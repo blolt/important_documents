@@ -13,7 +13,7 @@ from fares.sweep import (
     validate_budget,
 )
 
-from fares.config import PRODUCTION
+from fares.config import FALLBACK_TWO_CALL, PRODUCTION
 
 BANDS = (Band(max_lead_days=14, cadence_days=1),
          Band(max_lead_days=60, cadence_days=4),
@@ -121,6 +121,26 @@ class TestBudget:
 
     def test_estimate_scales_with_offsets(self):
         assert monthly_estimate(RT_5) == monthly_estimate(ONE_WAY) * 5
+
+    def test_doubling_calls_per_query_doubles_the_estimate(self):
+        doubled = SweepConfig(horizon_days=90, bands=BANDS, monthly_budget=99999,
+                              return_offsets=(3, 4, 5, 6, 7), calls_per_query=2)
+        assert monthly_estimate(doubled) == monthly_estimate(RT_5) * 2
+
+    def test_production_overruns_if_round_trips_need_two_calls(self):
+        # The unverified SerpApi behaviour in SPEC.md §12. If true, we must
+        # fail at startup, not halfway through a billing month.
+        two_call = SweepConfig(
+            horizon_days=PRODUCTION.horizon_days, bands=PRODUCTION.bands,
+            monthly_budget=PRODUCTION.monthly_budget,
+            return_offsets=PRODUCTION.return_offsets, calls_per_query=2)
+        assert monthly_estimate(two_call) == 9000
+        with pytest.raises(BudgetExceeded):
+            validate_budget(two_call)
+
+    def test_fallback_config_fits_at_two_calls_per_query(self):
+        assert FALLBACK_TWO_CALL.calls_per_query == 2
+        validate_budget(FALLBACK_TWO_CALL)
 
     def test_error_reports_both_numbers(self):
         with pytest.raises(BudgetExceeded) as e:
