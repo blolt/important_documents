@@ -1,0 +1,82 @@
+"""Budget-aware sweep planning.
+
+Which (departure, return) pairs do we spend quota on today? Fare volatility
+concentrates near departure, so near-term dates are swept daily and far-term
+dates are sampled. The monthly budget is a hard constraint, validated up
+front rather than discovered when the quota runs dry mid-month.
+"""
+from __future__ import annotations
+
+from datetime import date, timedelta
+
+from .models import Band, Query, SweepConfig
+
+DAYS_PER_MONTH = 30
+
+
+class BudgetExceeded(ValueError):
+    """Raised when a config would outrun its monthly search quota."""
+
+
+def cadence_for_lead(lead_days: int, bands: tuple[Band, ...]) -> int:
+    """Sweep interval for a date `lead_days` out. Bands are inclusive upper bounds."""
+    for band in bands:
+        if lead_days <= band.max_lead_days:
+            return band.cadence_days
+    return bands[-1].cadence_days
+
+
+def lead_bucket(lead_days: int, bands: tuple[Band, ...]) -> int:
+    """Index of the band a lead time falls in. Used to group comparable history."""
+    for i, band in enumerate(bands):
+        if lead_days <= band.max_lead_days:
+            return i
+    return len(bands) - 1
+
+
+def _is_due(lead_days: int, bands: tuple[Band, ...]) -> bool:
+    """A date is due when its lead time is a multiple of its cadence.
+
+    Because lead time decrements by one each day, this naturally staggers
+    which dates fire on which day instead of bursting the whole far-term
+    band at once -- which matters, since every SerpApi plan throttles to
+    20% of monthly volume per hour.
+    """
+    return lead_days % cadence_for_lead(lead_days, bands) == 0
+
+
+def select_queries(today: date, config: SweepConfig) -> list[Query]:
+    """The searches to run today. Deterministic given (today, config)."""
+    queries: list[Query] = []
+    for lead in range(1, config.horizon_days + 1):
+        if not _is_due(lead, config.bands):
+            continue
+        depart = today + timedelta(days=lead)
+        if config.return_offsets:
+            queries.extend(Query(depart, depart + timedelta(days=o))
+                           for o in config.return_offsets)
+        else:
+            queries.append(Query(depart))
+    return queries
+
+
+def daily_estimate(config: SweepConfig) -> int:
+    """Searches consumed on a typical day."""
+    due = sum(1 for lead in range(1, config.horizon_days + 1)
+              if _is_due(lead, config.bands))
+    return due * config.queries_per_date
+
+
+def monthly_estimate(config: SweepConfig) -> int:
+    return daily_estimate(config) * DAYS_PER_MONTH
+
+
+def validate_budget(config: SweepConfig) -> None:
+    """Fail fast on a config that cannot fit its plan."""
+    estimate = monthly_estimate(config)
+    if estimate > config.monthly_budget:
+        raise BudgetExceeded(
+            f"config needs ~{estimate} searches/month but budget is "
+            f"{config.monthly_budget}. Widen the band cadences, shorten the "
+            f"horizon, drop return offsets, or raise the plan tier."
+        )

@@ -1,6 +1,7 @@
 # DTW → MIA Fare Tracking & Alerting — Design Spec
 
-**Status:** Draft for review. No code written yet; data-source decision (§3) forks the implementation.
+**Status:** Decisions made (§9). Sweep planner built and under test; decision
+engine and fetch shell pending an alert policy (§7).
 **Date:** 2026-09-11
 
 ---
@@ -9,10 +10,11 @@
 
 Track the price of air travel from Detroit (DTW) to Miami (MIA), maintain a
 longitudinal record of those prices, and emit an alert when a fare is cheap
-relative to its own history. Secondary goal: "predictive pricing" — a
-buy/wait signal.
+relative to its own history.
 
-Non-goals (for v1): booking, multi-route generalization, a web UI.
+Non-goals: booking, multi-route generalization, a web UI, and — explicitly
+dropped — forecasting. We do not predict where prices are going. We report
+when one is cheap against its own record. See §5.
 
 ## 2. Feasibility verdict
 
@@ -70,45 +72,55 @@ volatility is concentrated near departure:
 | 15–60 days | every 3 days | ~15 |
 | 61–90 days | weekly | ~4 |
 
-≈ 33 one-way queries/day ≈ **1,000/month**, or ~5,000/month with a
-5-offset round-trip grid. That lands on the $25 or $75 tier respectively.
-Note SerpApi throttles every plan to 20%/hour of monthly volume, so the
-sweep must be paced, not burst.
+**Corrected by the implementation.** Those cadences actually need **5,100
+searches/month** with a 5-offset round-trip grid — over the $75 tier's 5,000,
+and the one-way variant came to 1,020 against the $25 tier's 1,000. Both
+overran by a few percent, which is exactly the kind of error that surfaces as
+a dead pipeline three weeks into a month rather than as an obvious failure.
 
-## 5. Predictive pricing — an honest assessment
+Widening the mid-band cadence from 3 days to 4 resolves it:
 
-The prior art is real and the outcome is instructive:
+| Lead time | Sweep frequency |
+|---|---|
+| 1–14 days | daily |
+| 15–60 days | every 4 days |
+| 61–90 days | every 7 days |
 
-- Etzioni & Knoblock's **Hamlet** (2003) captured 88.6% of achievable
-  savings over a 41-day pilot, averaging 27.1% saved where saving was
-  possible. It commercialized as **Farecast**, was acquired by Microsoft
-  in 2008 — and Microsoft **shut it down in 2014**.
-- Hopper claims ~95% accuracy on price-movement calls. Published academic
-  work on single routes lands closer to **80–83%**.
+**30 departure dates/day × 5 return offsets = 150 searches/day = 4,500/month**,
+90% of the Developer tier with headroom for retries. Unused searches do not
+roll over, so the remaining 10% is use-it-or-lose-it, not savings.
 
-Two things to hold onto. First, those accuracy figures are on a *binary*
-up/down call where the naive heuristic — "fares rise as departure
-approaches" — already captures much of the signal, so headline accuracy
-overstates the marginal value of a model. Second, single-route models are
-demonstrably trainable on ~1,800–51,000 records, but we would be
-generating roughly 1,000 records/month. That is a **two-to-four year**
-runway to a respectable training set for one route.
+`validate_budget()` enforces this at startup and
+`tests/test_sweep.py::TestBudget` guards it, including a regression test
+pinning the naive config at 5,100. SerpApi also throttles every plan to
+20%/hour of monthly volume (1,000/hr here), which 150/day never approaches —
+but the sweep staggers dates across days regardless.
 
-**Recommendation: do not train a model in v1.** Instead:
+## 5. Predictive pricing — dropped
 
-1. **Consume Google's prediction.** `price_level` is the output of a model
-   with incomparably more data than we will ever have. Free with each query.
-2. **Add our own percentile rule** over accumulated observations —
-   "is today's fare in the bottom decile for this route at this lead-time
-   bucket?" Cheap, interpretable, no training, and it encodes *our* history
-   rather than the global market's.
-3. **Accumulate the panel from day one anyway.** The data is a free
-   byproduct of alerting. Revisit modeling in a year when there's something
-   to model on. If the panel never justifies a model, we've lost nothing.
+Cut from scope by decision. We are not training a model and not forecasting.
 
-This is deliberately the heuristic-over-empirics call: the empirics aren't
-available yet at this sample size, and a percentile rule degrades gracefully
-where a badly-trained model degrades silently.
+Worth recording why this is the right call rather than a concession. Single-route
+models need ~1,800–51,000 records; this pipeline generates roughly 4,500
+observations/month, so a credible training set is a year-plus out. The prior
+art is not encouraging either: Etzioni's Hamlet (2003) captured 88.6% of
+achievable savings and commercialized as Farecast, which Microsoft bought in
+2008 and shut down in 2014. Published single-route accuracy sits at 80–83%
+on a binary up/down call that a naive "fares rise toward departure" heuristic
+already half-solves.
+
+What replaces it is a **percentile rule over our own history** — is this fare
+in the bottom Nth percentile for this lead-time bucket? — which is description,
+not prediction. No training, interpretable, degrades gracefully at small N
+where a thin model degrades silently.
+
+Google's `price_level` still arrives free with every response and is worth
+recording in the panel. We read it as one input to the alert gate, not as a
+forecast to act on.
+
+Separately, note that Capital One Travel already ships Hopper's price
+prediction (§11) — so the forecasting capability exists, it is just not ours
+to build.
 
 ## 6. Architecture
 
@@ -166,15 +178,80 @@ The network layer is a thin shell; the logic is pure and belongs under test.
 
 Write the decision-engine tests before the engine.
 
-## 9. Open decisions
+## 9. Decisions
 
-1. **Data source** — SerpApi paid, or prove it free on Travelpayouts first?
-2. **Trip shape** — one-way only (cheap), or round-trip grid (5× cost)?
-3. **Alert channel** — ntfy.sh push, email, or a GitHub issue?
-4. **Language** — Python (DuckDB/pandas story is better for the eventual
-   analysis) or TypeScript?
+| Decision | Resolution |
+|---|---|
+| Data source | **SerpApi**, Developer tier ($75/mo, 5,000 searches) |
+| Trip shape | **Round-trip**, 5 return offsets (3–7 nights) |
+| Alert channel | **ntfy.sh** push |
+| Language | **Python** — stdlib-only core, DuckDB for later analysis |
+| Forecasting | **Out of scope** (§5) |
+| Browser automation / scraping | **Rejected** — Google Flights is bot-defended, per-query cost exceeds the API, and non-determinism is disqualifying in a cron job |
 
-## 10. Known unknowns
+Still open: the alert policy itself (§7) — ceiling, percentile, nonstop
+preference, bag-fee normalization. These are travel preferences, not
+engineering choices.
+
+## 10. Implementation status
+
+- [x] `models.py` — value types, dependency-free
+- [x] `sweep.py` — budget-aware date selection, `validate_budget()`
+- [x] `config.py` — tuned production config (4,500/mo)
+- [x] `tests/test_sweep.py` — 19 tests
+- [ ] `normalize.py` — SerpApi JSON → `Observation[]`
+- [ ] `decide.py` — alert gate (blocked on policy, §7)
+- [ ] `storage.py` — JSONL append
+- [ ] `notify.py` — ntfy publish
+- [ ] GitHub Actions workflow
+
+## 11. Capital One Venture
+
+Three separate questions, three different answers.
+
+**Account/transaction data: no.** Capital One's DevExchange APIs are
+partner-facing, with production access gated behind partner approval — built
+for fintechs, not cardholders. Nessie, the openly accessible one, serves mock
+data. There is no supported path to your balance, transactions, or miles
+programmatically. Dead end; don't spend time here.
+
+**Portal features: yes, but manual.** Capital One Travel is powered by Hopper
+and carries three things worth using by hand:
+
+- *Price prediction* — the forecasting we just descoped, already built.
+- *Price drop protection* — free, auto-applied when their model says buy.
+  Monitors your itinerary for 10 days post-purchase, refunds the difference
+  as travel credit, **capped at $50**.
+- *Price freeze* — small fee, holds a fare up to 14 days, covers an increase
+  up to $500.
+
+One correction worth knowing: the **Venture earns no flight bonus** through
+the portal. 5x applies to hotels, vacation rentals, rental cars, and
+activities; flights earn the flat 2x. (That 5x-on-flights figure belongs to
+the Venture X, which carries a $395 annual fee.) So the portal's value here
+is the protections, not the earn rate.
+
+**Award availability: yes, and it's the interesting one.** This route is
+unusually well-suited to it — DTW is a Delta hub and MIA is an American hub,
+and Capital One transfers 1:1 to partners reaching both:
+
+- **Flying Blue** (Air France/KLM, SkyTeam) → Delta metal out of DTW
+- **British Airways / Qatar / Finnair Avios** (oneworld) → American into MIA
+
+So miles you already hold can price the same seats we're tracking in cash.
+**seats.aero** sells a Partner API — Pro is $9.99/mo including 1,000 API
+calls/day, which dwarfs our SerpApi budget — quoting availability across 20+
+mileage programs.
+
+That upgrades the product materially. Instead of "DTW→MIA Nov 14–18 is $214,"
+the alert reads "**$214 cash, or 11k Avios + $11 — you hold the miles.**"
+That's an actionable decision rather than a number.
+
+*Caveats:* the Partner API is Pro-only, non-commercial without written
+agreement, and seats.aero states access may be limited at their discretion —
+so treat it as a phase 2 that may not be grantable, not a dependency.
+
+## 12. Known unknowns
 
 - Exact SerpApi `google_flights` parameter surface (return-date grid
   support, whether a price-graph call can return many dates for one
