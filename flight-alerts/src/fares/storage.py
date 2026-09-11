@@ -85,6 +85,24 @@ def read_all(root: Path) -> Iterator[Observation]:
                     yield from_record(json.loads(line))
 
 
+def itinerary_key(obs: Observation) -> tuple[str, str | None]:
+    """Identity of an itinerary, independent of when it was observed."""
+    return (obs.depart.isoformat(), obs.ret.isoformat() if obs.ret else None)
+
+
+def history_by_itinerary(root: Path) -> dict[tuple[str, str | None], list[int]]:
+    """Prices grouped by exact itinerary -- the comparison set for a fixed trip.
+
+    For a known trip this beats lead-time bucketing: "is Dec 30 cheap against
+    what Dec 30 has been going for" is a sharper question than "is this cheap
+    for something 40-ish days out", which pools unrelated travel dates.
+    """
+    buckets: dict[tuple[str, str | None], list[int]] = defaultdict(list)
+    for obs in read_all(root):
+        buckets[itinerary_key(obs)].append(obs.price_usd)
+    return dict(buckets)
+
+
 def history_by_bucket(root: Path, bands: tuple[Band, ...]) -> dict[int, list[int]]:
     """Prices grouped by lead-time bucket -- the comparison set for percentiles.
 

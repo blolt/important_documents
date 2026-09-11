@@ -1,7 +1,9 @@
 # DTW → MIA Fare Tracking & Alerting — Design Spec
 
-**Status:** Built end-to-end, 112 tests passing, running against fixtures.
-Awaiting API keys, a recorded live response, and the alert policy (§7).
+**Status:** Built end-to-end, 162 tests passing, running against fixtures.
+Retargeted from a rolling horizon to a fixed NYE 2026 date grid (§13), and
+from push notifications to a group email digest (§14).
+Awaiting credentials, a recorded live response, and the alert policy (§7).
 See README.md for the handoff checklist.
 **Date:** 2026-09-11
 
@@ -184,8 +186,8 @@ Write the decision-engine tests before the engine.
 | Decision | Resolution |
 |---|---|
 | Data source | **SerpApi**, Developer tier ($75/mo, 5,000 searches) |
-| Trip shape | **Round-trip**, 5 return offsets (3–7 nights) |
-| Alert channel | **ntfy.sh** push |
+| Trip shape | **Round-trip**, fixed NYE date grid — 11 itineraries (§13) |
+| Alert channel | **Email** — Gmail SMTP, one digest per sweep to a group list (§14) |
 | Language | **Python** — stdlib-only core, DuckDB for later analysis |
 | Forecasting | **Out of scope** (§5) |
 | Browser automation / scraping | **Rejected** — Google Flights is bot-defended, per-query cost exceeds the API, and non-determinism is disqualifying in a cron job |
@@ -281,3 +283,71 @@ so treat it as a phase 2 that may not be grantable, not a dependency.
   rule directly.
 - SerpApi terms as applied to personal, low-volume use — worth a read
   before scaling the sweep.
+
+
+## 13. Fixed-date retargeting (NYE 2026)
+
+The rolling 90-day horizon was the wrong shape once the trip became a specific
+one. Two concrete problems:
+
+1. **The trip was outside the window.** NYE is 111 days out as of 2026-09-11.
+   A 90-day horizon would not have queried it until October 2.
+2. **The budget bought the wrong thing.** A rolling sweep spends 150 calls/day
+   across 30 departure dates we don't care about. A fixed trip is 11
+   itineraries — so the same money buys *temporal* resolution instead of
+   breadth.
+
+`TargetTrip` replaces the rolling grid with an explicit product of candidate
+departures and returns, filtered by `min_nights`/`max_nights`:
+
+| | Rolling | Fixed (NYE) |
+|---|---|---|
+| Itineraries per sweep | 150 | 11 |
+| Sweeps/day | 1 | **12** (every 2h) |
+| Calls/month | 4,500 | 3,960 |
+| Sees Dec 31? | not until October | yes |
+
+NYE 2026 is a Thursday. Departures Dec 29–31, returns Jan 1–4; Dec 31 → Jan 1
+is excluded at one night, giving 11 viable itineraries.
+
+**This also sharpened the comparison set.** History is now keyed by exact
+itinerary rather than lead-time band: "is Dec 30 → Jan 3 cheap against what
+that trip has been going for" beats "is this cheap for something ~100 days
+out," which pools unrelated travel dates. `should_alert()` now takes the
+comparable price list directly, so the gate logic is agnostic to which mode
+produced it.
+
+The rolling planner is retained and tested — it's the right tool for watching
+the route generally after this trip.
+
+## 14. Group email delivery
+
+Push notifications were wrong for a trip being planned with other people.
+Changes:
+
+- **Gmail SMTP via app password**, stdlib `smtplib` only. Mail arrives from
+  John's own address, which lands in friends' inboxes better than a
+  transactional sender with no warmed domain — and adds no dependency around
+  a stored mail credential.
+- **One digest per sweep**, not one message per fare. Five separate emails to
+  a group thread is how a useful alert becomes a muted one. Multipart
+  plain + inline-styled HTML, since email clients drop external CSS.
+- **Recipients live in a GitHub secret**, not in a config file. Friends'
+  addresses should not be committed — least of all to a repo that also holds
+  a resume.
+- **Debounce made drop-aware.** A 24-hour debounce that silences a further
+  $60 drop is a bug when twelve sweeps land per day, so `renotify_drop_usd`
+  re-opens the window for a materially cheaper fare.
+- **Observations moved to a dedicated `fares-data` branch.** Twelve sweeps a
+  day is ~1,300 automated commits by NYE. Both the fresh-start and
+  accumulate-across-runs paths of the worktree mechanism were verified
+  against a scratch repo before shipping; the second exposed a real bug (a
+  local branch ref outliving a removed worktree, needing `switch -C`).
+
+### Still open
+
+- Confirm the date grid, and whether pals are flying from other origins
+  (multi-origin is a real change, not a config tweak).
+- `ceiling_usd` is $300 and NYE is peak season — probably too low.
+- The Starter tier ($25/mo) covers 3 sweeps/day for 11 itineraries. The $75
+  tier buys 2-hour cadence instead. That's $50/month for alert latency.

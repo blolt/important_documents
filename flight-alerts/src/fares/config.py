@@ -6,7 +6,9 @@ overruns the plan. See tests/test_sweep.py::TestBudget.
 """
 from __future__ import annotations
 
-from .models import Band, SweepConfig
+from datetime import date
+
+from .models import Band, SweepConfig, TargetTrip
 
 ORIGIN = "DTW"
 DESTINATION = "MIA"
@@ -54,6 +56,31 @@ FALLBACK_TWO_CALL = SweepConfig(
 )
 
 
+# --- The actual trip -------------------------------------------------------
+# NYE 2026 falls on a Thursday, so Dec 31 -> Jan 3/4 is the natural long
+# weekend. The trip is 111 days out as of 2026-09-11, which is why the
+# rolling 90-day SweepConfig above cannot see it at all.
+#
+# 11 viable itineraries (Dec 31 -> Jan 1 is filtered out by min_nights).
+# At 11 per sweep, the Developer tier buys 12 sweeps/day -- one every two
+# hours -- versus one daily pass over dates we do not care about. For a
+# fixed date with scarce holiday inventory, temporal resolution is worth
+# more than breadth.
+TRIP_LABEL = "New Year's Eve 2026"
+
+NYE_TRIP = TargetTrip(
+    departures=(date(2026, 12, 29), date(2026, 12, 30), date(2026, 12, 31)),
+    returns=(date(2027, 1, 1), date(2027, 1, 2), date(2027, 1, 3), date(2027, 1, 4)),
+    monthly_budget=SERPAPI_DEVELOPER_TIER,
+    sweeps_per_day=12,
+    calls_per_query=1,
+    min_nights=2,
+    max_nights=10,
+)
+
+# What the CLI and the workflow actually run.
+ACTIVE = NYE_TRIP
+
 # --- Alert policy -----------------------------------------------------------
 # These are placeholders awaiting John's actual travel preferences (SPEC.md §7).
 # Edit policy.json rather than this file; these are the fallbacks if it is absent.
@@ -68,6 +95,7 @@ DEFAULT_POLICY = {
     "bag_fee_usd": {},
     "min_history": 5,
     "max_alerts_per_sweep": 5,
+    "renotify_drop_usd": 25,
 }
 
 
@@ -90,4 +118,5 @@ def load_policy(path=None):
         bag_fee_usd={k: int(v) for k, v in raw["bag_fee_usd"].items()},
         min_history=int(raw["min_history"]),
         max_alerts_per_sweep=int(raw["max_alerts_per_sweep"]),
+        renotify_drop_usd=int(raw["renotify_drop_usd"]),
     )

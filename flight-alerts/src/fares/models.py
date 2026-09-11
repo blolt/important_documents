@@ -79,6 +79,10 @@ class Policy:
     # Day one has no history, so the cold-start path can fire on every
     # itinerary in the sweep. Cap it, keeping the cheapest.
     max_alerts_per_sweep: int = 5
+    # Debounce silences repeats, but a fare that keeps falling is news.
+    # Re-alert inside the debounce window if it dropped at least this much
+    # below what we last announced for the same itinerary.
+    renotify_drop_usd: int = 25
 
 
 @dataclass(frozen=True)
@@ -87,3 +91,22 @@ class Decision:
     reason: str
     effective_price_usd: int | None = None
     percentile_rank: float | None = None
+
+
+@dataclass(frozen=True)
+class TargetTrip:
+    """A fixed-date trip: an explicit grid of candidate itineraries.
+
+    The rolling-horizon SweepConfig is the wrong shape for a trip with a
+    known date. NYE is not "somewhere in the next 90 days" -- it is a dozen
+    specific itineraries we want sampled often, so the budget buys temporal
+    resolution on what we care about instead of breadth we don't.
+    """
+    departures: tuple[date, ...]
+    returns: tuple[date, ...]
+    monthly_budget: int
+    sweeps_per_day: int = 1
+    calls_per_query: int = 1
+    # Sanity bounds: a Miami NYE trip is not 1 night or 3 weeks.
+    min_nights: int = 2
+    max_nights: int = 10

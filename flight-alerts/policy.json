@@ -14,5 +14,8 @@
   "min_history": 5,
 
   "_cap_note": "Day one has no history, so the cold-start path can fire on every itinerary. This caps alerts per sweep, keeping the cheapest.",
-  "max_alerts_per_sweep": 5
+  "max_alerts_per_sweep": 5,
+
+  "_renotify_note": "Debounce silences repeats, but a fare that keeps falling is news. Re-alert inside the debounce window if it dropped at least this much below the last announced price.",
+  "renotify_drop_usd": 25
 }

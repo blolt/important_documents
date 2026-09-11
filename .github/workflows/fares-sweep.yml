@@ -2,43 +2,75 @@ name: fares sweep
 
 on:
   schedule:
-    # 13:00 UTC ~= 9am Detroit. Once daily: the sweep planner already
-    # decides which dates are due, so a second run would double spend
-    # without adding coverage.
-    - cron: '0 13 * * *'
+    # Every 2 hours. 11 itineraries x 12 sweeps/day = 132 calls/day,
+    # ~3,960/month against a 5,000 plan. For a fixed date with scarce
+    # holiday inventory, sampling often beats sampling broadly.
+    - cron: '0 */2 * * *'
   workflow_dispatch:
     inputs:
       limit:
-        description: 'Cap queries (leave blank for a full sweep)'
+        description: 'Cap queries (blank = full sweep)'
         required: false
       dry_run:
-        description: 'Use fixtures, write nothing'
+        description: 'Use fixtures; write nothing, send nothing'
         type: boolean
         default: false
 
 concurrency:
-  # Two sweeps at once would double-spend quota and race on the data commit.
+  # Two sweeps at once would double-spend quota and race the data push.
   group: fares-sweep
   cancel-in-progress: false
 
 permissions:
   contents: write
 
+env:
+  DATA_BRANCH: fares-data
+
 jobs:
   sweep:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: flight-alerts
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Full history so the data branch can be fetched and pushed to
+          # without hitting shallow-update restrictions.
+          fetch-depth: 0
+
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
+      - name: Restore the panel from the data branch
+        # Observations live on a dedicated branch: ~1,300 automated commits
+        # by NYE have no business in the code history.
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin "+refs/heads/${DATA_BRANCH}:refs/remotes/origin/${DATA_BRANCH}" || true
+          PANEL="${RUNNER_TEMP}/panel"
+          rm -rf "$PANEL"
+          if git show-ref --quiet "refs/remotes/origin/${DATA_BRANCH}"; then
+            git worktree add -q --detach "$PANEL" "origin/${DATA_BRANCH}"
+            # -C not -c: a local ref can outlive a removed worktree.
+            git -C "$PANEL" switch -q -C "${DATA_BRANCH}"
+            echo "restored $(find "$PANEL/data" -name '*.jsonl' 2>/dev/null | wc -l) partition(s)"
+          else
+            git worktree add -q --detach "$PANEL"
+            git -C "$PANEL" checkout -q --orphan "${DATA_BRANCH}"
+            git -C "$PANEL" rm -rqf . 2>/dev/null || true
+            echo "no data branch yet - starting a fresh panel"
+          fi
+
       - name: Sweep
+        working-directory: flight-alerts
         env:
+          FARES_DATA_DIR: ${{ runner.temp }}/panel/data
           SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          ALERT_RECIPIENTS: ${{ secrets.ALERT_RECIPIENTS }}
+          ALERT_FROM: ${{ secrets.ALERT_FROM }}
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
         run: |
           ARGS=""
@@ -47,30 +79,32 @@ jobs:
           PYTHONPATH=src python -m fares sweep $ARGS
 
       - name: Summarize
+        working-directory: flight-alerts
+        env:
+          FARES_DATA_DIR: ${{ runner.temp }}/panel/data
         run: PYTHONPATH=src python -m fares status >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Commit observations
+      - name: Publish the panel
         if: ${{ inputs.dry_run != true }}
         run: |
-          git config user.name  "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          # `git add` on a missing path exits 128 and, under bash -e, fails
-          # the step. data/ is absent until the first observation is stored.
-          if [ ! -d data ]; then
-            echo "no data directory yet - nothing to commit"
+          PANEL="${RUNNER_TEMP}/panel"
+          if [ ! -d "$PANEL/data" ]; then
+            echo "nothing collected"
             exit 0
           fi
-          git add data/
-          if git diff --staged --quiet; then
+          git -C "$PANEL" add data
+          if git -C "$PANEL" diff --staged --quiet; then
             echo "no new observations"
             exit 0
           fi
-          git commit -m "chore(fares): observations $(date -u +%Y-%m-%d) [skip ci]"
-          # Another run may have pushed since checkout; rebase rather than fail.
+          git -C "$PANEL" commit -qm "observations $(date -u +%Y-%m-%dT%H:%MZ)"
           for attempt in 1 2 3 4; do
-            git pull --rebase --autostash origin "${GITHUB_REF_NAME}" && \
-              git push origin "HEAD:${GITHUB_REF_NAME}" && exit 0
+            if git -C "$PANEL" push -q origin "${DATA_BRANCH}"; then
+              echo "panel published"
+              exit 0
+            fi
+            git -C "$PANEL" pull -q --rebase --autostash origin "${DATA_BRANCH}" || true
             sleep $((2 ** attempt))
           done
-          echo "::error::could not push observations after 4 attempts"
+          echo "::error::could not push the panel after 4 attempts"
           exit 1

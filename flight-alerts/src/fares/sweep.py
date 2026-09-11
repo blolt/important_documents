@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from datetime import date, timedelta
 
-from .models import Band, Query, SweepConfig
+from .models import Band, Query, SweepConfig, TargetTrip
 
 DAYS_PER_MONTH = 30
 
@@ -83,3 +83,43 @@ def validate_budget(config: SweepConfig) -> None:
             f"{config.monthly_budget}. Widen the band cadences, shorten the "
             f"horizon, drop return offsets, or raise the plan tier."
         )
+
+
+# --- Fixed-date targeting ---------------------------------------------------
+
+def select_target_queries(trip: TargetTrip) -> list[Query]:
+    """Every viable itinerary in the trip's date grid.
+
+    Unlike the rolling sweep this does not depend on today's date: a fixed
+    trip is the same grid every day until it happens.
+    """
+    queries = []
+    for depart in trip.departures:
+        for ret in trip.returns:
+            nights = (ret - depart).days
+            if trip.min_nights <= nights <= trip.max_nights:
+                queries.append(Query(depart, ret))
+    return queries
+
+
+def target_daily_estimate(trip: TargetTrip) -> int:
+    return len(select_target_queries(trip)) * trip.sweeps_per_day * trip.calls_per_query
+
+
+def target_monthly_estimate(trip: TargetTrip) -> int:
+    return target_daily_estimate(trip) * DAYS_PER_MONTH
+
+
+def validate_target_budget(trip: TargetTrip) -> None:
+    estimate = target_monthly_estimate(trip)
+    if estimate > trip.monthly_budget:
+        raise BudgetExceeded(
+            f"trip needs ~{estimate} searches/month but budget is "
+            f"{trip.monthly_budget}. Reduce sweeps_per_day, trim the date "
+            f"grid, or raise the plan tier."
+        )
+
+
+def sweep_interval_hours(trip: TargetTrip) -> float:
+    """Hours between sweeps, for scheduling."""
+    return 24 / trip.sweeps_per_day

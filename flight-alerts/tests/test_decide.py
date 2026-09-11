@@ -2,7 +2,6 @@ from datetime import date, datetime, timedelta
 
 import pytest
 
-from fares.config import BANDS
 from fares.decide import effective_price, percentile_rank, should_alert
 from fares.models import Observation, Policy
 
@@ -25,12 +24,7 @@ def policy(**kw):
     return Policy(**base)
 
 
-# Bucket 1 is the 15-60 day band, where lead=30 lands.
-def hist(prices, bucket=1):
-    return {bucket: list(prices)}
-
-
-CHEAP_HISTORY = hist(range(200, 300))  # 100 observations, $200-$299
+CHEAP_HISTORY = list(range(200, 300))  # 100 prior readings, $200-$299
 
 
 class TestPercentileRank:
@@ -63,64 +57,59 @@ class TestEffectivePrice:
 
 class TestGates:
     def test_cheap_fare_with_history_alerts(self):
-        d = should_alert(obs(price=180), CHEAP_HISTORY, policy(), [], NOW, BANDS)
+        d = should_alert(obs(price=180), CHEAP_HISTORY, policy(), [], NOW)
         assert d.alert and d.percentile_rank == 0.0
 
     def test_above_ceiling_is_rejected(self):
-        d = should_alert(obs(price=400), CHEAP_HISTORY, policy(), [], NOW, BANDS)
+        d = should_alert(obs(price=400), CHEAP_HISTORY, policy(), [], NOW)
         assert not d.alert and "above_ceiling" in d.reason
 
     def test_bag_fee_can_push_a_fare_over_the_ceiling(self):
         # The whole point of normalizing: a $290 Spirit fare is not under a $300 ceiling.
         p = policy(bag_fee_usd={"NK": 75})
-        d = should_alert(obs(price=290, carrier="NK"), CHEAP_HISTORY, p, [], NOW, BANDS)
+        d = should_alert(obs(price=290, carrier="NK"), CHEAP_HISTORY, p, [], NOW)
         assert not d.alert and "above_ceiling" in d.reason
         assert d.effective_price_usd == 365
 
     def test_excluded_carrier_is_rejected(self):
         p = policy(excluded_carriers=frozenset({"NK"}))
-        d = should_alert(obs(price=100, carrier="NK"), CHEAP_HISTORY, p, [], NOW, BANDS)
+        d = should_alert(obs(price=100, carrier="NK"), CHEAP_HISTORY, p, [], NOW)
         assert not d.alert and "carrier_excluded" in d.reason
 
     def test_connection_rejected_when_nonstop_only(self):
         p = policy(nonstop_only=True)
-        d = should_alert(obs(price=100, stops=1), CHEAP_HISTORY, p, [], NOW, BANDS)
+        d = should_alert(obs(price=100, stops=1), CHEAP_HISTORY, p, [], NOW)
         assert not d.alert and "not_nonstop" in d.reason
 
     def test_connection_allowed_when_nonstop_not_required(self):
-        d = should_alert(obs(price=100, stops=1), CHEAP_HISTORY, policy(), [], NOW, BANDS)
+        d = should_alert(obs(price=100, stops=1), CHEAP_HISTORY, policy(), [], NOW)
         assert d.alert
 
     def test_google_high_price_level_vetoes_an_otherwise_cheap_fare(self):
         d = should_alert(obs(price=180, price_level="high"), CHEAP_HISTORY,
-                         policy(), [], NOW, BANDS)
+                         policy(), [], NOW)
         assert not d.alert and d.reason == "google_price_level_high"
 
     def test_expensive_relative_to_history_is_rejected(self):
-        d = should_alert(obs(price=295), CHEAP_HISTORY, policy(), [], NOW, BANDS)
+        d = should_alert(obs(price=295), CHEAP_HISTORY, policy(), [], NOW)
         assert not d.alert and d.reason.startswith("percentile:")
 
 
 class TestColdStart:
     def test_insufficient_history_does_not_alert_without_google_signal(self):
-        d = should_alert(obs(price=100), hist([200, 210]), policy(), [], NOW, BANDS)
+        d = should_alert(obs(price=100), [200, 210], policy(), [], NOW)
         assert not d.alert and "insufficient_history" in d.reason
 
     def test_below_google_typical_low_alerts_despite_thin_history(self):
-        d = should_alert(obs(price=150, typical_low=200), hist([200, 210]),
-                         policy(), [], NOW, BANDS)
+        d = should_alert(obs(price=150, typical_low=200), [200, 210],
+                         policy(), [], NOW)
         assert d.alert and d.reason == "cold_start:below_google_typical_low"
 
     def test_above_google_typical_low_does_not_alert_on_thin_history(self):
-        d = should_alert(obs(price=250, typical_low=200), hist([200, 210]),
-                         policy(), [], NOW, BANDS)
+        d = should_alert(obs(price=250, typical_low=200), [200, 210],
+                         policy(), [], NOW)
         assert not d.alert
 
-    def test_history_from_another_bucket_does_not_count(self):
-        # lead=30 is bucket 1; history in bucket 0 must not satisfy min_history.
-        d = should_alert(obs(price=180, lead=30), hist(range(200, 300), bucket=0),
-                         policy(), [], NOW, BANDS)
-        assert not d.alert and "insufficient_history" in d.reason
 
 
 class TestDebounce:
@@ -132,25 +121,25 @@ class TestDebounce:
 
     def test_recent_alert_suppresses_a_repeat(self):
         o = obs(price=180)
-        d = should_alert(o, CHEAP_HISTORY, policy(), self._alert_log(o, 2), NOW, BANDS)
+        d = should_alert(o, CHEAP_HISTORY, policy(), self._alert_log(o, 2), NOW)
         assert not d.alert and "debounced" in d.reason
 
     def test_stale_alert_does_not_suppress(self):
         o = obs(price=180)
-        d = should_alert(o, CHEAP_HISTORY, policy(), self._alert_log(o, 48), NOW, BANDS)
+        d = should_alert(o, CHEAP_HISTORY, policy(), self._alert_log(o, 48), NOW)
         assert d.alert
 
     def test_alert_for_a_different_departure_does_not_suppress(self):
         other = obs(price=180, lead=31)
         d = should_alert(obs(price=180, lead=30), CHEAP_HISTORY, policy(),
-                         self._alert_log(other, 2), NOW, BANDS)
+                         self._alert_log(other, 2), NOW)
         assert d.alert
 
     def test_alert_for_a_different_return_does_not_suppress(self):
         # Same departure, different trip length -- a distinct itinerary.
         other = obs(price=180, lead=30, ret_offset=3)
         d = should_alert(obs(price=180, lead=30, ret_offset=5), CHEAP_HISTORY,
-                         policy(), self._alert_log(other, 2), NOW, BANDS)
+                         policy(), self._alert_log(other, 2), NOW)
         assert d.alert
 
 
@@ -159,7 +148,7 @@ class TestAlertCap:
         out = []
         for i, price in enumerate(prices):
             o = obs(price=price, lead=30 + i)
-            out.append((o, should_alert(o, CHEAP_HISTORY, policy(), [], NOW, BANDS)))
+            out.append((o, should_alert(o, CHEAP_HISTORY, policy(), [], NOW)))
         return out
 
     def test_cap_keeps_only_the_allowed_count(self):
@@ -185,7 +174,7 @@ class TestAlertCap:
         p = policy(max_alerts_per_sweep=1, bag_fee_usd={"NK": 100})
         spirit = obs(price=120, carrier="NK", lead=30)
         delta = obs(price=150, carrier="DL", lead=31)
-        cands = [(o, should_alert(o, CHEAP_HISTORY, p, [], NOW, BANDS))
+        cands = [(o, should_alert(o, CHEAP_HISTORY, p, [], NOW))
                  for o in (spirit, delta)]
         (kept, _), = select_alerts(cands, p)
         assert kept.carrier == "DL", "a $120 fare plus a $100 bag is not cheaper than $150"
@@ -193,3 +182,53 @@ class TestAlertCap:
     def test_empty_candidate_list(self):
         from fares.decide import select_alerts
         assert select_alerts([], policy()) == []
+
+
+class TestRenotifyOnFurtherDrop:
+    def _log(self, o, hours_ago, price):
+        return [{"sent_at": (NOW - timedelta(hours=hours_ago)).isoformat(),
+                 "depart": o.depart.isoformat(),
+                 "ret": o.ret.isoformat() if o.ret else None,
+                 "price_usd": price}]
+
+    def test_same_price_inside_window_stays_suppressed(self):
+        o = obs(price=200)
+        d = should_alert(o, CHEAP_HISTORY, policy(), self._log(o, 2, 200), NOW)
+        assert not d.alert and "debounced" in d.reason
+
+    def test_trivial_drop_stays_suppressed(self):
+        o = obs(price=190)
+        d = should_alert(o, CHEAP_HISTORY, policy(renotify_drop_usd=25),
+                         self._log(o, 2, 200), NOW)
+        assert not d.alert, "a $10 drop should not re-mail the group"
+
+    def test_material_drop_re_alerts_inside_the_window(self):
+        o = obs(price=140)
+        d = should_alert(o, CHEAP_HISTORY, policy(renotify_drop_usd=25),
+                         self._log(o, 2, 200), NOW)
+        assert d.alert, "a $60 drop is news even two hours later"
+
+    def test_drop_exactly_at_the_threshold_fires(self):
+        # renotify_drop_usd is "at least this much below", so $25 qualifies.
+        o = obs(price=175)
+        d = should_alert(o, CHEAP_HISTORY, policy(renotify_drop_usd=25),
+                         self._log(o, 2, 200), NOW)
+        assert d.alert
+
+    def test_one_dollar_short_of_the_threshold_does_not_fire(self):
+        o = obs(price=176)
+        d = should_alert(o, CHEAP_HISTORY, policy(renotify_drop_usd=25),
+                         self._log(o, 2, 200), NOW)
+        assert not d.alert
+
+    def test_threshold_measured_against_the_lowest_recent_alert(self):
+        # Two alerts in the window; the $150 one is the bar to beat, not $200.
+        o = obs(price=140)
+        log = self._log(o, 4, 200) + self._log(o, 2, 150)
+        d = should_alert(o, CHEAP_HISTORY, policy(renotify_drop_usd=25), log, NOW)
+        assert not d.alert
+
+    def test_price_rise_inside_the_window_stays_suppressed(self):
+        o = obs(price=260)
+        d = should_alert(o, CHEAP_HISTORY, policy(), self._log(o, 2, 200), NOW)
+        assert not d.alert

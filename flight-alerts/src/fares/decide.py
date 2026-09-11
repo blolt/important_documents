@@ -7,8 +7,7 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 
-from .models import Band, Decision, Observation, Policy
-from .sweep import lead_bucket
+from .models import Decision, Observation, Policy
 
 Candidate = tuple[Observation, Decision]
 
@@ -29,23 +28,41 @@ def percentile_rank(price: int, history: list[int]) -> float:
     return sum(1 for h in history if h <= price) / len(history)
 
 
-def _recently_alerted(obs: Observation, alerts: list[dict], policy: Policy,
-                      now: datetime) -> bool:
-    """Debounce, so a stable cheap fare does not page every sweep."""
+def _last_alert_price(obs: Observation, alerts: list[dict], policy: Policy,
+                      now: datetime) -> int | None:
+    """Price we last announced for this itinerary inside the debounce window."""
     cutoff = now - timedelta(hours=policy.debounce_hours)
     depart, ret = obs.depart.isoformat(), obs.ret.isoformat() if obs.ret else None
-    for alert in alerts:
-        if alert["depart"] != depart or alert.get("ret") != ret:
-            continue
-        if datetime.fromisoformat(alert["sent_at"]) >= cutoff:
-            return True
-    return False
+    recent = [a for a in alerts
+              if a["depart"] == depart and a.get("ret") == ret
+              and datetime.fromisoformat(a["sent_at"]) >= cutoff]
+    if not recent:
+        return None
+    return min(a["price_usd"] for a in recent)
 
 
-def should_alert(obs: Observation, history: dict[int, list[int]], policy: Policy,
-                 alerts: list[dict], now: datetime,
-                 bands: tuple[Band, ...]) -> Decision:
-    """Gates are ordered cheapest-and-most-decisive first."""
+def _is_debounced(obs: Observation, price: int, alerts: list[dict],
+                  policy: Policy, now: datetime) -> bool:
+    """Suppress a repeat, unless the fare has fallen materially since.
+
+    A stable cheap fare should not mail the group every two hours. A fare
+    that drops another $60 should.
+    """
+    last = _last_alert_price(obs, alerts, policy, now)
+    if last is None:
+        return False
+    return price > last - policy.renotify_drop_usd
+
+
+def should_alert(obs: Observation, comparable: list[int], policy: Policy,
+                 alerts: list[dict], now: datetime) -> Decision:
+    """Gates are ordered cheapest-and-most-decisive first.
+
+    `comparable` is the price history this observation should be judged
+    against, chosen by the caller: same itinerary for a fixed-date trip,
+    same lead-time bucket for a rolling sweep. Keeping that decision out
+    here means the gate logic does not care which mode we are in.
+    """
     price = effective_price(obs, policy)
 
     if obs.carrier in policy.excluded_carriers:
@@ -61,10 +78,8 @@ def should_alert(obs: Observation, history: dict[int, list[int]], policy: Policy
     if obs.price_level == "high":
         return Decision(False, "google_price_level_high", price)
 
-    if _recently_alerted(obs, alerts, policy, now):
+    if _is_debounced(obs, price, alerts, policy, now):
         return Decision(False, f"debounced:{policy.debounce_hours}h", price)
-
-    comparable = history.get(lead_bucket(obs.lead_days, bands), [])
 
     # Cold start: with too little history a percentile is noise, so fall back
     # to the typical range Google ships with the response. This is why
