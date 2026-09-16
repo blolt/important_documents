@@ -75,11 +75,15 @@ def should_alert(obs: Observation, comparable: list[int], policy: Policy,
         return Decision(False, f"above_ceiling:{price}>{policy.ceiling_usd}", price)
 
     # Google's own read. We use it only to veto, never to justify.
-    if obs.price_level == "high":
+    if policy.veto_google_high and obs.price_level == "high":
         return Decision(False, "google_price_level_high", price)
 
     if _is_debounced(obs, price, alerts, policy, now):
         return Decision(False, f"debounced:{policy.debounce_hours}h", price)
+
+    # History gate disabled: under the ceiling is enough.
+    if policy.percentile is None:
+        return Decision(True, "under_ceiling", price)
 
     # Cold start: with too little history a percentile is noise, so fall back
     # to the typical range Google ships with the response. This is why

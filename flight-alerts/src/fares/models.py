@@ -70,7 +70,10 @@ class Observation:
 @dataclass(frozen=True)
 class Policy:
     ceiling_usd: int
-    percentile: float                 # alert if fare at/below this percentile of comparable history
+    # Alert if fare at/below this percentile of comparable history.
+    # None disables the history gate (and its cold-start fallback) entirely:
+    # anything under the ceiling alerts, subject to debounce and the cap.
+    percentile: float | None
     debounce_hours: int = 24
     nonstop_only: bool = False
     excluded_carriers: frozenset[str] = frozenset()
@@ -83,6 +86,8 @@ class Policy:
     # Re-alert inside the debounce window if it dropped at least this much
     # below what we last announced for the same itinerary.
     renotify_drop_usd: int = 25
+    # Google's own price_level == "high" vetoes an alert. False ignores it.
+    veto_google_high: bool = True
 
 
 @dataclass(frozen=True)

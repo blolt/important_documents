@@ -102,14 +102,15 @@ brings it back to 3,960.
 
 | Field | Now | What it means |
 |---|---|---|
-| `ceiling_usd` | 300 | Never alert above this. **NYE is peak season — this is probably too low.** |
-| `percentile` | 0.10 | Alert in the cheapest decile for *that specific itinerary* |
+| `ceiling_usd` | 500 | Never alert above this (bag-adjusted) |
+| `percentile` | `null` | `null` = no history gate, anything under the ceiling alerts. Set e.g. `0.10` to alert only in the cheapest decile for *that specific itinerary* |
+| `veto_google_high` | false | `true` = Google's own "high" price rating blocks an alert |
 | `nonstop_only` | false | Both hub carriers fly DTW–MIA nonstop |
 | `excluded_carriers` | `[]` | IATA codes, e.g. `["NK"]` |
 | `bag_fee_usd` | `{}` | Per-carrier, added before comparing. A $59 Spirit fare with a $75 bag isn't $59 — depends how you pack |
 | `debounce_hours` | 24 | Don't re-mail the group about the same itinerary |
 | `renotify_drop_usd` | 25 | ...unless it fell at least this much further |
-| `max_alerts_per_sweep` | 5 | Caps the day-one cold-start burst |
+| `max_alerts_per_sweep` | 11 | Caps alerts per digest, keeping the cheapest. 11 = every itinerary fits in one email |
 
 ---
 

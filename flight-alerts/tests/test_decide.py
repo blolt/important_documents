@@ -232,3 +232,39 @@ class TestRenotifyOnFurtherDrop:
         o = obs(price=260)
         d = should_alert(o, CHEAP_HISTORY, policy(), self._log(o, 2, 200), NOW)
         assert not d.alert
+
+
+class TestGatesDisabled:
+    """policy.json can switch off Google's veto and the history gate, leaving
+    ceiling + debounce + cap as the whole policy."""
+
+    OFF = dict(percentile=None, veto_google_high=False)
+
+    def test_google_high_is_ignored_when_veto_off(self):
+        d = should_alert(obs(price=180, price_level="high"), CHEAP_HISTORY,
+                         policy(**self.OFF), [], NOW)
+        assert d.alert and d.reason == "under_ceiling"
+
+    def test_no_history_gate_alerts_on_thin_history(self):
+        d = should_alert(obs(price=250), [200, 210], policy(**self.OFF), [], NOW)
+        assert d.alert and d.reason == "under_ceiling"
+
+    def test_expensive_relative_to_history_still_alerts(self):
+        d = should_alert(obs(price=295), CHEAP_HISTORY, policy(**self.OFF), [], NOW)
+        assert d.alert and d.reason == "under_ceiling"
+
+    def test_ceiling_still_applies(self):
+        d = should_alert(obs(price=301), [], policy(**self.OFF), [], NOW)
+        assert not d.alert and d.reason.startswith("above_ceiling")
+
+    def test_debounce_still_applies(self):
+        o = obs(price=250)
+        recent = [dict(depart=o.depart.isoformat(), ret=o.ret.isoformat(),
+                       price_usd=250, sent_at=(NOW - timedelta(hours=2)).isoformat())]
+        d = should_alert(o, [], policy(**self.OFF), recent, NOW)
+        assert not d.alert and d.reason.startswith("debounced")
+
+    def test_veto_alone_can_stay_on_with_history_gate_off(self):
+        d = should_alert(obs(price=180, price_level="high"), [],
+                         policy(percentile=None, veto_google_high=True), [], NOW)
+        assert not d.alert and d.reason == "google_price_level_high"

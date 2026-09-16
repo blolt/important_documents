@@ -96,6 +96,7 @@ DEFAULT_POLICY = {
     "min_history": 5,
     "max_alerts_per_sweep": 5,
     "renotify_drop_usd": 25,
+    "veto_google_high": True,
 }
 
 
@@ -111,7 +112,7 @@ def load_policy(path=None):
         raw.update(json.loads(Path(path).read_text()))
     return Policy(
         ceiling_usd=int(raw["ceiling_usd"]),
-        percentile=float(raw["percentile"]),
+        percentile=None if raw["percentile"] is None else float(raw["percentile"]),
         debounce_hours=int(raw["debounce_hours"]),
         nonstop_only=bool(raw["nonstop_only"]),
         excluded_carriers=frozenset(raw["excluded_carriers"]),
@@ -119,4 +120,5 @@ def load_policy(path=None):
         min_history=int(raw["min_history"]),
         max_alerts_per_sweep=int(raw["max_alerts_per_sweep"]),
         renotify_drop_usd=int(raw["renotify_drop_usd"]),
+        veto_google_high=bool(raw["veto_google_high"]),
     )
