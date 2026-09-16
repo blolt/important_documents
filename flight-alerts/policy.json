@@ -1,7 +1,7 @@
 {
   "_comment": "John: these are placeholders. Set them to your real preferences.",
 
-  "ceiling_usd": 300,
+  "ceiling_usd": 500,
   "percentile": 0.10,
   "debounce_hours": 24,
 
