@@ -114,7 +114,7 @@ def load_policy(path=None):
     if path is not None and Path(path).exists():
         raw.update(json.loads(Path(path).read_text()))
     return Policy(
-        ceiling_usd=int(raw["ceiling_usd"]),
+        ceiling_usd=None if raw["ceiling_usd"] is None else int(raw["ceiling_usd"]),
         percentile=None if raw["percentile"] is None else float(raw["percentile"]),
         debounce_hours=int(raw["debounce_hours"]),
         nonstop_only=bool(raw["nonstop_only"]),

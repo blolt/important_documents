@@ -71,7 +71,7 @@ def should_alert(obs: Observation, comparable: list[int], policy: Policy,
     if policy.nonstop_only and not obs.is_nonstop:
         return Decision(False, f"not_nonstop:{obs.stops}_stops", price)
 
-    if price > policy.ceiling_usd:
+    if policy.ceiling_usd is not None and price > policy.ceiling_usd:
         return Decision(False, f"above_ceiling:{price}>{policy.ceiling_usd}", price)
 
     # Google's own read. We use it only to veto, never to justify.
@@ -83,7 +83,7 @@ def should_alert(obs: Observation, comparable: list[int], policy: Policy,
 
     # History gate disabled: under the ceiling is enough.
     if policy.percentile is None:
-        return Decision(True, "under_ceiling", price)
+        return Decision(True, "under_ceiling" if policy.ceiling_usd is not None else "no_ceiling", price)
 
     # Cold start: with too little history a percentile is noise, so fall back
     # to the typical range Google ships with the response. This is why

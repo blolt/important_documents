@@ -268,3 +268,23 @@ class TestGatesDisabled:
         d = should_alert(obs(price=180, price_level="high"), [],
                          policy(percentile=None, veto_google_high=True), [], NOW)
         assert not d.alert and d.reason == "google_price_level_high"
+
+
+class TestNoCeiling:
+    def test_null_ceiling_lets_any_price_through(self):
+        p = policy(ceiling_usd=None, percentile=None, veto_google_high=False)
+        d = should_alert(obs(price=1457, price_level="high"), [], p, [], NOW)
+        assert d.alert and d.reason == "no_ceiling"
+
+    def test_debounce_still_holds_without_a_ceiling(self):
+        p = policy(ceiling_usd=None, percentile=None, veto_google_high=False)
+        o = obs(price=512)
+        recent = [dict(depart=o.depart.isoformat(), ret=o.ret.isoformat(),
+                       price_usd=512, sent_at=(NOW - timedelta(hours=3)).isoformat())]
+        assert not should_alert(o, [], p, recent, NOW).alert
+
+    def test_policy_json_null_loads_as_none(self, tmp_path):
+        from fares.config import load_policy
+        f = tmp_path / "policy.json"
+        f.write_text('{"ceiling_usd": null}')
+        assert load_policy(f).ceiling_usd is None

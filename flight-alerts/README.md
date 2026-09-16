@@ -104,7 +104,7 @@ runs over every fixture, so the parser is validated against this shape.
 
 | Field | Now | What it means |
 |---|---|---|
-| `ceiling_usd` | 500 | Never alert above this (bag-adjusted) |
+| `ceiling_usd` | `null` | `null` = no ceiling, every fare qualifies. Set a number to never alert above it (bag-adjusted) |
 | `percentile` | `null` | `null` = no history gate, anything under the ceiling alerts. Set e.g. `0.10` to alert only in the cheapest decile for *that specific itinerary* |
 | `veto_google_high` | false | `true` = Google's own "high" price rating blocks an alert |
 | `nonstop_only` | false | Both hub carriers fly DTW–MIA nonstop |
@@ -145,7 +145,7 @@ shipping.
 ## How it decides
 
 Every distinct flight option in a sweep is a candidate. One alerts only if
-**all** of: under your ceiling (bag-adjusted), not a repeat inside
+**all** of: under your ceiling if one is set (bag-adjusted), not a repeat inside
 `debounce_hours` *unless* it dropped `renotify_drop_usd` below the last
 announced price, and within `max_alerts_per_sweep` of the sweep's cheapest.
 Two further gates are **off** in `policy.json` (2026-09-15) but available:

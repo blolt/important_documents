@@ -94,7 +94,7 @@ class Observation:
 
 @dataclass(frozen=True)
 class Policy:
-    ceiling_usd: int
+    ceiling_usd: int | None            # None = no price ceiling; everything qualifies
     # Alert if fare at/below this percentile of comparable history.
     # None disables the history gate (and its cold-start fallback) entirely:
     # anything under the ceiling alerts, subject to debounce and the cap.

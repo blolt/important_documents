@@ -159,7 +159,8 @@ def cmd_sweep(args) -> int:
         # combination price is what the digest should show.
         eligible = [i for i, (o, t) in sorted(enumerate(outbounds), key=lambda p: p[1][0].price_usd)
                     if t and query.ret is not None
-                    and effective_price(o, policy) <= policy.ceiling_usd]
+                    and (policy.ceiling_usd is None
+                         or effective_price(o, policy) <= policy.ceiling_usd)]
         observations, done = [], set()
         for i in eligible[:lookups]:
             obs, token = outbounds[i]

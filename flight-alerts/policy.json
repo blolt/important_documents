@@ -1,7 +1,8 @@
 {
   "_comment": "John: these are placeholders. Set them to your real preferences.",
 
-  "ceiling_usd": 500,
+  "_ceiling_note": "null = no price ceiling: every fare qualifies (debounce and the per-digest cap still apply). Set a number to only alert at or below it.",
+  "ceiling_usd": null,
   "_percentile_note": "null = no history gate; any fare under the ceiling alerts. Set e.g. 0.10 to only alert in the cheapest decile of that itinerary's own readings.",
   "percentile": null,
   "_google_note": "true = Google's own 'high' price rating vetoes an alert. false = ignore Google's rating.",
