@@ -22,7 +22,7 @@ class QuotaExceeded(RuntimeError):
 
 
 def build_params(query: Query, api_key: str, origin: str, destination: str,
-                 currency: str = "USD") -> dict[str, str]:
+                 currency: str = "USD", departure_token: str | None = None) -> dict[str, str]:
     params = {
         "engine": "google_flights",
         "departure_id": origin,
@@ -36,11 +36,17 @@ def build_params(query: Query, api_key: str, origin: str, destination: str,
     }
     if query.ret is not None:
         params["return_date"] = query.ret.isoformat()
+    if departure_token:
+        # Second call of a round trip: lists return options for one chosen
+        # outbound, each priced as the full round-trip total.
+        params["departure_token"] = departure_token
     return params
 
 
-def build_url(query: Query, api_key: str, origin: str, destination: str) -> str:
-    return f"{ENDPOINT}?{urllib.parse.urlencode(build_params(query, api_key, origin, destination))}"
+def build_url(query: Query, api_key: str, origin: str, destination: str,
+              departure_token: str | None = None) -> str:
+    params = build_params(query, api_key, origin, destination, departure_token=departure_token)
+    return f"{ENDPOINT}?{urllib.parse.urlencode(params)}"
 
 
 def _default_get(url: str, timeout: int = 30) -> str:
@@ -49,10 +55,11 @@ def _default_get(url: str, timeout: int = 30) -> str:
 
 
 def fetch(query: Query, api_key: str, origin: str, destination: str,
-          get: Callable[[str], str] = _default_get) -> dict:
+          get: Callable[[str], str] = _default_get,
+          departure_token: str | None = None) -> dict:
     """One search. Raises QuotaExceeded so a sweep can stop rather than
     hammer an exhausted plan for the rest of the month."""
-    payload = json.loads(get(build_url(query, api_key, origin, destination)))
+    payload = json.loads(get(build_url(query, api_key, origin, destination, departure_token)))
     error = payload.get("error", "") if isinstance(payload, dict) else ""
     if error and "run out of searches" in str(error).lower():
         raise QuotaExceeded(str(error))

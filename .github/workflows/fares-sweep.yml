@@ -20,7 +20,7 @@ on:
         type: boolean
         default: false
       record:
-        description: 'Spend 1 search: upload the raw SerpApi response as an artifact and stop'
+        description: 'Spend 2 searches: upload raw outbound + returns responses as an artifact and stop'
         type: boolean
         default: false
 
@@ -114,7 +114,9 @@ jobs:
         if: steps.creds.outputs.ready == 'true' && inputs.record == true
         with:
           name: serpapi-response
-          path: ${{ runner.temp }}/serpapi_response.json
+          path: |
+            ${{ runner.temp }}/serpapi_response.json
+            ${{ runner.temp }}/serpapi_response_returns.json
           retention-days: 3
 
       - name: Sweep

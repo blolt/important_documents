@@ -225,6 +225,18 @@ def cmd_record(args) -> int:
     out = Path(args.out)
     out.write_text(json.dumps(payload, indent=1))
     print(f"wrote {out} ({out.stat().st_size} bytes) for {query.depart}->{query.ret}")
+
+    # Second search: the return options for the cheapest outbound.
+    options = [it for k in ("best_flights", "other_flights") for it in payload.get(k) or []
+               if isinstance(it, dict) and it.get("departure_token")]
+    if options and query.ret is not None:
+        cheapest_out = min(options, key=lambda it: it.get("price") or 10**9)
+        returns = serpapi.fetch(query, api_key, config.ORIGIN, config.DESTINATION,
+                                departure_token=cheapest_out["departure_token"])
+        ret_out = out.with_name(out.stem + "_returns.json")
+        ret_out.write_text(json.dumps(returns, indent=1))
+        print(f"wrote {ret_out} ({ret_out.stat().st_size} bytes) "
+              f"for outbound ${cheapest_out.get('price')}")
     return 0
 
 
