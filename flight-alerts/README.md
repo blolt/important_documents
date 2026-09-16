@@ -131,7 +131,8 @@ PYTHONPATH=src python -m fares sweep --limit 3 # first live run: spend 3 searche
 ```
 
 Once secrets are set, `.github/workflows/fares-sweep.yml` runs every 4 hours.
-Trigger it by hand from the Actions tab — inputs: `dry_run`, `limit`, `test_email`, `record`.
+Trigger it by hand from the Actions tab — inputs: `dry_run`, `limit`, `test_email`, `record`,
+`force` (send this sweep's digest now, ignoring the 24h debounce).
 
 ### Where the data lives
 

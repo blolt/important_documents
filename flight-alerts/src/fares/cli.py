@@ -126,7 +126,9 @@ def cmd_sweep(args) -> int:
     fixture = json.loads(FIXTURE.read_text()) if args.dry_run else None
     returns_fixture = json.loads(RETURNS_FIXTURE.read_text()) if args.dry_run else None
     history = storage.history_by_itinerary(DATA)
-    alerts = storage.read_alerts(DATA)
+    # --force ignores the debounce: send the current digest regardless of
+    # what was announced in the last 24h.
+    alerts = [] if args.force else storage.read_alerts(DATA)
 
     # Return-flight lookups this sweep can afford (budget.py). The recorded
     # returns fixture matches the cheapest outbound, so a dry run resolves one.
@@ -300,6 +302,8 @@ def main(argv=None) -> int:
     p.set_defaults(func=cmd_plan)
 
     p = sub.add_parser("sweep", help="fetch, store, and alert")
+    p.add_argument("--force", action="store_true",
+                   help="ignore the debounce and send the digest now")
     p.add_argument("--dry-run", action="store_true",
                    help="use a fixture; writes nothing, sends nothing")
     p.add_argument("--limit", type=int, help="cap queries for a cheap first live test")
