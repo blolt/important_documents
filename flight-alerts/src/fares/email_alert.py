@@ -93,42 +93,73 @@ def _duration(minutes: int | None) -> str | None:
     return f"{minutes // 60}h {minutes % 60:02d}m"
 
 
-def _routing(obs) -> str:
-    if obs.is_nonstop:
+def _leg_routing(stops: int | None, layovers: tuple[str, ...]) -> str:
+    if not stops:
         return "nonstop"
-    via = f" via {'/'.join(obs.layovers)}" if obs.layovers else ""
-    return f"{obs.stops} stop{'s' if obs.stops > 1 else ''}{via}"
+    via = f" via {'/'.join(layovers)}" if layovers else ""
+    return f"{stops} stop{'s' if stops > 1 else ''}{via}"
+
+
+def _routing(obs) -> str:
+    return _leg_routing(obs.stops, obs.layovers)
+
+
+def _label(name: str | None, code: str | None, numbers: tuple[str, ...]) -> str:
+    """'American AA 3542 / AA 817', or just the carrier if that is all we have."""
+    base = name or code or "?"
+    return f"{base} {' / '.join(numbers)}" if numbers else base
 
 
 def _flight_label(obs) -> str:
-    """'American AA 3542 / AA 817', or just the carrier code if that is all we have."""
-    name = obs.airline or obs.carrier
-    if obs.flight_numbers:
-        return f"{name} {' / '.join(obs.flight_numbers)}"
-    return name
+    return _label(obs.airline, obs.carrier, obs.flight_numbers)
+
+
+def _ret_label(obs) -> str:
+    return _label(obs.ret_airline, None, obs.ret_flight_numbers)
+
+
+def _leg_times(dep: str | None, arr: str | None, minutes: int | None) -> str | None:
+    d, a = _clock(dep), _clock(arr)
+    if not (d and a):
+        return None
+    out = f"{d} → {a}"
+    if dep and arr and arr[:10] > dep[:10]:
+        out += " (+1 day)"
+    if (dur := _duration(minutes)):
+        out += f" · {dur}"
+    return out
 
 
 def _times(obs) -> str | None:
-    dep, arr = _clock(obs.depart_time), _clock(obs.arrive_time)
-    if not (dep and arr):
-        return None
-    out = f"{dep} → {arr}"
-    if _next_day(obs):
-        out += " (+1 day)"
-    if (dur := _duration(obs.duration_min)):
-        out += f" · {dur}"
-    return out
+    return _leg_times(obs.depart_time, obs.arrive_time, obs.duration_min)
+
+
+def _ret_times(obs) -> str | None:
+    return _leg_times(obs.ret_depart_time, obs.ret_arrive_time, obs.ret_duration_min)
 
 
 def _fare_line(obs, decision, origin: str = "", destination: str = "") -> str:
     price = decision.effective_price_usd or obs.price_usd
     nights = (obs.ret - obs.depart).days if obs.ret else None
-    parts = [f"${price} — {_flight_label(obs)}, {_routing(obs)}"]
-    when = f"  Out {obs.depart:%a %b %-d}"
-    if (t := _times(obs)):
-        when += f" {t}"
-    when += f" · back {obs.ret:%a %b %-d} ({nights} nights)" if nights else " · one way"
-    parts.append(when)
+    if obs.has_return:
+        parts = [f"${price} — {_flight_label(obs)} out · {_ret_label(obs)} back"]
+        out = f"  Out {obs.depart:%a %b %-d}"
+        if (t := _times(obs)):
+            out += f" {t}"
+        parts.append(f"{out} · {_routing(obs)}")
+        back = f"  Back {obs.ret:%a %b %-d}"
+        if (t := _ret_times(obs)):
+            back += f" {t}"
+        parts.append(f"{back} · {_leg_routing(obs.ret_stops, obs.ret_layovers)} ({nights} nights)")
+    else:
+        parts = [f"${price} — {_flight_label(obs)}, {_routing(obs)}"]
+        when = f"  Out {obs.depart:%a %b %-d}"
+        if (t := _times(obs)):
+            when += f" {t}"
+        when += f" · back {obs.ret:%a %b %-d} ({nights} nights)" if nights else " · one way"
+        parts.append(when)
+        if obs.ret:
+            parts.append("  (return flight not resolved; price is with the cheapest return)")
     if decision.percentile_rank is not None:
         parts.append(f"  Cheapest {decision.percentile_rank:.0%} of readings "
                      f"we've logged for these dates")
@@ -157,8 +188,9 @@ def format_digest(selected: list[Candidate], origin: str, destination: str,
         f"{origin} → {destination} · {trip_label}",
         f"{count} fare{'s' if count > 1 else ''} worth a look:",
         *[_fare_line(o, d, origin, destination) for o, d in selected],
-        "Prices move. Check before you get excited. Each link opens the exact "
-        "date search on Google Flights; pick the row with the flight numbers shown.",
+        "Prices move. Check before you get excited. Each link opens Google Flights "
+        "for these exact dates (with the outbound pre-selected where we resolved the "
+        "return); match the flight numbers shown.",
         "— Sent by John's fare tracker. Reply-all to argue about dates.",
     ])
 
@@ -175,14 +207,28 @@ def format_digest(selected: list[Candidate], origin: str, destination: str,
             detail.append(f"${obs.price_usd} fare + ${price - obs.price_usd} bag")
         times = _times(obs)
         link = _search_url(origin, destination, obs)
+        if obs.has_return:
+            rt = _ret_times(obs)
+            legs = (f"<strong>Out {obs.depart:%a %b %-d}</strong> {_flight_label(obs)}"
+                    f"{f' · {times}' if times else ''} · {_routing(obs)}<br>"
+                    f"<strong>Back {obs.ret:%a %b %-d}</strong> {_ret_label(obs)}"
+                    f"{f' · {rt}' if rt else ''} · {_leg_routing(obs.ret_stops, obs.ret_layovers)}<br>")
+            detail = [d for d in detail if d != _routing(obs)]
+            link_text = "Open on Google Flights (outbound pre-selected)"
+        else:
+            legs = (f"<strong>{_flight_label(obs)}</strong><br>"
+                    f"<strong>{obs.depart:%a %b %-d}</strong>{f' {times}' if times else ''}"
+                    f"{f' &rarr; back <strong>{obs.ret:%a %b %-d}</strong>' if obs.ret else ' (one way)'}<br>")
+            if obs.ret:
+                detail.append("return not resolved; price is with the cheapest return")
+            link_text = "Open on Google Flights"
         rows.append(f"""
       <tr>
         <td style="padding:14px 16px;border-bottom:1px solid #e6e6e6;font:600 22px/1.2 -apple-system,Segoe UI,Roboto,sans-serif;color:#111;white-space:nowrap;vertical-align:top">${price}</td>
         <td style="padding:14px 16px;border-bottom:1px solid #e6e6e6;font:400 14px/1.5 -apple-system,Segoe UI,Roboto,sans-serif;color:#111">
-          <strong>{_flight_label(obs)}</strong><br>
-          <strong>{obs.depart:%a %b %-d}</strong>{f' {times}' if times else ''}{f' &rarr; back <strong>{obs.ret:%a %b %-d}</strong>' if obs.ret else ' (one way)'}<br>
+          {legs}
           <span style="color:#666">{' · '.join(detail)}</span><br>
-          <a href="{link}" style="color:#0a58ca">Open on Google Flights</a>
+          <a href="{link}" style="color:#0a58ca">{link_text}</a>
         </td>
       </tr>""")
 
@@ -195,8 +241,8 @@ def format_digest(selected: list[Candidate], origin: str, destination: str,
     </td></tr>
     <tr><td><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">{''.join(rows)}</table></td></tr>
     <tr><td style="padding:16px;font:400 12px/1.5 -apple-system,Segoe UI,Roboto,sans-serif;color:#777">
-      Prices move fast — verify before booking. Google Flights can't link to one selected flight,
-      so each link opens the exact date search; pick the row with the flight numbers shown.<br>
+      Prices move fast — verify before booking. Links open Google Flights for these exact dates,
+      with the outbound pre-selected where the return was resolved; match the flight numbers shown.<br>
       Sent by John's fare tracker. Reply-all to argue about dates.
     </td></tr>
   </table>

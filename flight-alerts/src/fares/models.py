@@ -68,6 +68,20 @@ class Observation:
     duration_min: int | None = None    # total incl. layovers
     layovers: tuple[str, ...] = ()     # airport ids
     url: str | None = None             # Google Flights search for these exact dates
+    # Return leg, present only when the sweep spent a second call
+    # (departure_token) to resolve it. Then price_usd is this exact
+    # outbound+return combination's total and url has the outbound selected.
+    ret_airline: str | None = None
+    ret_flight_numbers: tuple[str, ...] = ()
+    ret_depart_time: str | None = None
+    ret_arrive_time: str | None = None
+    ret_duration_min: int | None = None
+    ret_layovers: tuple[str, ...] = ()
+    ret_stops: int | None = None
+
+    @property
+    def has_return(self) -> bool:
+        return bool(self.ret_flight_numbers)
 
     @property
     def lead_days(self) -> int:

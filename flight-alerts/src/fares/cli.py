@@ -18,7 +18,9 @@ from pathlib import Path
 from . import config, email_alert, notify, serpapi, storage
 from .decide import select_alerts, should_alert
 from .models import Decision
-from .normalize import MalformedResponse, normalize
+from .budget import returns_budget
+from .decide import effective_price
+from .normalize import MalformedResponse, normalize, normalize_returns, normalize_with_tokens
 from .storage import itinerary_key
 from .sweep import (
     select_target_queries,
@@ -34,6 +36,7 @@ ROOT = Path(__file__).resolve().parents[2]
 DATA = Path(os.environ.get("FARES_DATA_DIR") or ROOT / "data")
 # A recorded response (2026-09-15), so dry runs and test emails show real flights.
 FIXTURE = ROOT / "tests" / "fixtures" / "real_dtw_mia_2026-12-28.json"
+RETURNS_FIXTURE = ROOT / "tests" / "fixtures" / "returns" / "real_dtw_mia_2026-12-28_returns.json"
 
 
 def _now() -> datetime:
@@ -121,15 +124,27 @@ def cmd_sweep(args) -> int:
         queries = queries[:args.limit]
 
     fixture = json.loads(FIXTURE.read_text()) if args.dry_run else None
+    returns_fixture = json.loads(RETURNS_FIXTURE.read_text()) if args.dry_run else None
     history = storage.history_by_itinerary(DATA)
     alerts = storage.read_alerts(DATA)
 
-    collected, candidates, failed = [], [], 0
+    # Return-flight lookups this sweep can afford (budget.py). The recorded
+    # returns fixture matches the cheapest outbound, so a dry run resolves one.
+    if args.dry_run:
+        lookups = 1
+    else:
+        acct = serpapi.account(api_key)
+        left = acct.get("plan_searches_left") if acct else None
+        lookups = returns_budget(left, now, trip.sweeps_per_day, len(queries),
+                                 config.MAX_RETURNS_PER_SWEEP)
+        print(f"plan searches left: {left}; resolving returns for up to {lookups} outbound(s)")
+
+    collected, candidates, failed, resolved = [], [], 0, 0
     for query in queries:
         try:
             payload = fixture if args.dry_run else serpapi.fetch(
                 query, api_key, config.ORIGIN, config.DESTINATION)
-            observations = normalize(payload, now, query.depart, query.ret)
+            outbounds = normalize_with_tokens(payload, now, query.depart, query.ret)
         except serpapi.QuotaExceeded as exc:
             print(f"quota exhausted, stopping: {exc}", file=sys.stderr)
             break
@@ -139,14 +154,45 @@ def cmd_sweep(args) -> int:
                   file=sys.stderr)
             continue
 
+        # Spend the return lookups on the cheapest outbounds under the ceiling:
+        # those are the only ones that can end up in the digest, and the
+        # combination price is what the digest should show.
+        eligible = [i for i, (o, t) in sorted(enumerate(outbounds), key=lambda p: p[1][0].price_usd)
+                    if t and query.ret is not None
+                    and effective_price(o, policy) <= policy.ceiling_usd]
+        observations, done = [], set()
+        for i in eligible[:lookups]:
+            obs, token = outbounds[i]
+            try:
+                ret_payload = returns_fixture if args.dry_run else serpapi.fetch(
+                    query, api_key, config.ORIGIN, config.DESTINATION, departure_token=token)
+                combos = normalize_returns(ret_payload, obs)
+            except serpapi.QuotaExceeded as exc:
+                print(f"quota exhausted, no more return lookups: {exc}", file=sys.stderr)
+                lookups = 0
+                break
+            except (MalformedResponse, OSError, ValueError) as exc:
+                failed += 1
+                print(f"  returns for {' / '.join(obs.flight_numbers)}: "
+                      f"{type(exc).__name__}: {exc}", file=sys.stderr)
+                continue
+            if combos:
+                observations.extend(combos)
+                done.add(i)
+                resolved += 1
+        lookups -= len(done)
+        # Unresolved outbounds stay as outbound-only rows (price = the
+        # cheapest return Google found for them).
+        observations.extend(o for i, (o, _) in enumerate(outbounds) if i not in done)
         collected.extend(observations)
+
         # Every distinct flight option is a candidate, cheapest first, so the
         # digest lists each flight under the ceiling rather than one fare per
-        # itinerary. Identical flight numbers at different prices collapse to
-        # the cheapest.
+        # itinerary. Identical flights at different prices collapse to the cheapest.
         seen: set = set()
         for obs in sorted(observations, key=lambda o: o.price_usd):
-            key = obs.flight_numbers or (obs.carrier, obs.stops, obs.price_usd)
+            key = ((obs.flight_numbers, obs.ret_flight_numbers) if obs.flight_numbers
+                   else (obs.carrier, obs.stops, obs.price_usd))
             if key in seen:
                 continue
             seen.add(key)
@@ -170,13 +216,14 @@ def cmd_sweep(args) -> int:
               f"max_alerts_per_sweep={policy.max_alerts_per_sweep})")
 
     if args.dry_run:
-        print(f"\ndry run: {len(queries)} queries, {len(collected)} observations, "
-              f"{len(selected)} alerts. Nothing written, nothing sent.")
+        print(f"\ndry run: {len(queries)} queries, {resolved} returns resolved, "
+              f"{len(collected)} observations, {len(selected)} alerts. "
+              f"Nothing written, nothing sent.")
         return 0
 
     written = storage.append(collected, DATA)
-    print(f"{len(queries)} queries, {written} observations stored, "
-          f"{len(selected)} alerts, {failed} failures")
+    print(f"{len(queries)} queries, {resolved} returns resolved, {written} observations "
+          f"stored, {len(selected)} alerts, {failed} failures")
     return 0
 
 
@@ -190,9 +237,12 @@ def cmd_test_email(args) -> int:
 
     now = _now()
     query = select_target_queries(config.ACTIVE)[0]
-    observations = normalize(json.loads(FIXTURE.read_text()), now,
-                             query.depart, query.ret)
-    policy = config.load_policy(ROOT / "policy.json")
+    outbounds = normalize_with_tokens(json.loads(FIXTURE.read_text()), now,
+                                      query.depart, query.ret)
+    cheapest_i = min(range(len(outbounds)), key=lambda i: outbounds[i][0].price_usd)
+    observations = normalize_returns(json.loads(RETURNS_FIXTURE.read_text()),
+                                     outbounds[cheapest_i][0])
+    observations += [o for i, (o, _) in enumerate(outbounds) if i != cheapest_i]
     # The policy is bypassed on purpose: this proves delivery and format, and
     # must send even when nothing currently clears the ceiling.
     cheapest_few = sorted(observations, key=lambda o: o.price_usd)[:5]

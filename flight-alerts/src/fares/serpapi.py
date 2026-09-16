@@ -14,6 +14,7 @@ from typing import Callable, Protocol
 from .models import Query
 
 ENDPOINT = "https://serpapi.com/search"
+ACCOUNT = "https://serpapi.com/account"
 ROUND_TRIP, ONE_WAY = "1", "2"
 
 
@@ -64,3 +65,14 @@ def fetch(query: Query, api_key: str, origin: str, destination: str,
     if error and "run out of searches" in str(error).lower():
         raise QuotaExceeded(str(error))
     return payload
+
+
+def account(api_key: str, get: Callable[[str], str] = _default_get) -> dict | None:
+    """Plan facts (plan_searches_left etc.). Does not consume a search.
+    None on any failure: the sweep then resolves no returns rather than
+    guessing at the quota."""
+    try:
+        payload = json.loads(get(f"{ACCOUNT}?{urllib.parse.urlencode({'api_key': api_key})}"))
+    except (OSError, ValueError):
+        return None
+    return payload if isinstance(payload, dict) else None

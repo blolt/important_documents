@@ -41,6 +41,13 @@ def to_record(obs: Observation) -> dict:
         "duration_min": obs.duration_min,
         "layovers": list(obs.layovers),
         "url": obs.url,
+        "ret_airline": obs.ret_airline,
+        "ret_flight_numbers": list(obs.ret_flight_numbers),
+        "ret_depart_time": obs.ret_depart_time,
+        "ret_arrive_time": obs.ret_arrive_time,
+        "ret_duration_min": obs.ret_duration_min,
+        "ret_layovers": list(obs.ret_layovers),
+        "ret_stops": obs.ret_stops,
     }
 
 
@@ -62,6 +69,13 @@ def from_record(rec: dict) -> Observation:
         duration_min=rec.get("duration_min"),
         layovers=tuple(rec.get("layovers") or ()),
         url=rec.get("url"),
+        ret_airline=rec.get("ret_airline"),
+        ret_flight_numbers=tuple(rec.get("ret_flight_numbers") or ()),
+        ret_depart_time=rec.get("ret_depart_time"),
+        ret_arrive_time=rec.get("ret_arrive_time"),
+        ret_duration_min=rec.get("ret_duration_min"),
+        ret_layovers=tuple(rec.get("ret_layovers") or ()),
+        ret_stops=rec.get("ret_stops"),
     )
 
 

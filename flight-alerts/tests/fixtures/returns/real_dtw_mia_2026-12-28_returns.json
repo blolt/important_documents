@@ -1,0 +1,403 @@
+{
+ "search_metadata": {
+  "id": "6aaa0474d17a806e13fc8eae",
+  "status": "Success",
+  "json_endpoint": "https://serpapi.com/searches/_mcsB1KlFBSmp84BmZu9BWB-EIHXWZBWOV5jjjbn40w/6aaa0474d17a806e13fc8eae.json",
+  "markdown_endpoint": "https://serpapi.com/searches/_mcsB1KlFBSmp84BmZu9BWB-EIHXWZBWOV5jjjbn40w/6aaa0474d17a806e13fc8eae.md",
+  "created_at": "2026-09-16 02:52:36 UTC",
+  "processed_at": "2026-09-16 02:52:36 UTC",
+  "google_flights_url": "https://www.google.com/travel/flights?hl=en&gl=us&curr=USD&tfs=CBwQAhphEgoyMDI2LTEyLTI4IiAKA0RUVxIKMjAyNi0xMi0yOBoDT1JEKgJBQTIEMzU0MiIfCgNPUkQSCjIwMjYtMTItMjgaA01JQSoCQUEyAzgxN2oHCAESA0RUV3IHCAESA01JQRoeEgoyMDI3LTAxLTAzagcIARIDTUlBcgcIARIDRFRXQAFIAXABmAEB&tfu=EgIIAQ",
+  "raw_html_file": "https://serpapi.com/searches/_mcsB1KlFBSmp84BmZu9BWB-EIHXWZBWOV5jjjbn40w/6aaa0474d17a806e13fc8eae.html",
+  "prettify_html_file": "https://serpapi.com/searches/_mcsB1KlFBSmp84BmZu9BWB-EIHXWZBWOV5jjjbn40w/6aaa0474d17a806e13fc8eae.prettify",
+  "total_time_taken": 2.51
+ },
+ "search_parameters": {
+  "engine": "google_flights",
+  "hl": "en",
+  "gl": "us",
+  "type": "1",
+  "departure_id": "DTW",
+  "arrival_id": "MIA",
+  "outbound_date": "2026-12-28",
+  "return_date": "2027-01-03",
+  "departure_token": "WyJDalJJYVdaRmFIaFdjemRUY1hOQlFtWmZOVUZDUnkwdExTMHRMUzB0TFMxMmRHdHBNVUZCUVVGQlIzRnhRVm8wVGpkRU5VdEJFZ3hCUVRNMU5ESjhRVUU0TVRjYUN3aUFrQU1RQWhvRFZWTkVPQnh3Z0pBRCIsW1siRFRXIiwiMjAyNi0xMi0yOCIsIk9SRCIsbnVsbCwiQUEiLCIzNTQyIl0sWyJPUkQiLCIyMDI2LTEyLTI4IiwiTUlBIixudWxsLCJBQSIsIjgxNyJdXV0=",
+  "currency": "USD"
+ },
+ "best_flights": [
+  {
+   "flights": [
+    {
+     "departure_airport": {
+      "name": "Miami International Airport",
+      "id": "MIA",
+      "time": "2027-01-03 20:30"
+     },
+     "arrival_airport": {
+      "name": "Detroit Metropolitan Wayne County Airport",
+      "id": "DTW",
+      "time": "2027-01-03 23:53"
+     },
+     "duration": 203,
+     "airplane": "Boeing 737",
+     "airline": "American",
+     "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AA.png",
+     "travel_class": "Economy",
+     "flight_number": "AA 1268",
+     "legroom": "30 in",
+     "extensions": [
+      "Average legroom (30 in)",
+      "Free Wi-Fi",
+      "In-seat power & USB outlets",
+      "Stream media to your device",
+      "Carbon emissions estimate: 173 kg"
+     ]
+    }
+   ],
+   "total_duration": 203,
+   "carbon_emissions": {
+    "this_flight": 173000,
+    "typical_for_this_route": 213000,
+    "difference_percent": -19
+   },
+   "price": 650,
+   "type": "Round trip",
+   "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AA.png",
+   "extensions": [
+    "Checked baggage for a fee",
+    "Bag and fare conditions depend on the return flight"
+   ],
+   "booking_token": "WyJDalJJYTFCcVEwWmpSVkoxTlhkQlFtRkxOWGRDUnkwdExTMHRMUzB0TFhCbVlteHNORUZCUVVGQlIzRnhRa2hSVG0xVGRYZEJFZ1pCUVRFeU5qZ2FDd2kvK3dNUUFob0RWVk5FT0J4d3Yvc0QiLFtbIkRUVyIsIjIwMjYtMTItMjgiLCJPUkQiLG51bGwsIkFBIiwiMzU0MiJdLFsiT1JEIiwiMjAyNi0xMi0yOCIsIk1JQSIsbnVsbCwiQUEiLCI4MTciXV0sW1siTUlBIiwiMjAyNy0wMS0wMyIsIkRUVyIsbnVsbCwiQUEiLCIxMjY4Il1dXQ=="
+  },
+  {
+   "flights": [
+    {
+     "departure_airport": {
+      "name": "Miami International Airport",
+      "id": "MIA",
+      "time": "2027-01-03 16:38"
+     },
+     "arrival_airport": {
+      "name": "Ronald Reagan Washington National Airport",
+      "id": "DCA",
+      "time": "2027-01-03 19:20"
+     },
+     "duration": 162,
+     "airplane": "Boeing 737",
+     "airline": "American",
+     "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AA.png",
+     "travel_class": "Economy",
+     "flight_number": "AA 1997",
+     "legroom": "30 in",
+     "extensions": [
+      "Average legroom (30 in)",
+      "Free Wi-Fi",
+      "In-seat power & USB outlets",
+      "Stream media to your device",
+      "Carbon emissions estimate: 140 kg"
+     ]
+    },
+    {
+     "departure_airport": {
+      "name": "Ronald Reagan Washington National Airport",
+      "id": "DCA",
+      "time": "2027-01-03 19:50"
+     },
+     "arrival_airport": {
+      "name": "Detroit Metropolitan Wayne County Airport",
+      "id": "DTW",
+      "time": "2027-01-03 21:42"
+     },
+     "duration": 112,
+     "airplane": "Canadair RJ 700",
+     "airline": "American",
+     "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AA.png",
+     "travel_class": "Economy",
+     "flight_number": "AA 5384",
+     "legroom": "31 in",
+     "extensions": [
+      "Average legroom (31 in)",
+      "Wi-Fi for a fee",
+      "In-seat power & USB outlets",
+      "Stream media to your device",
+      "Carbon emissions estimate: 131 kg"
+     ],
+     "plane_and_crew_by": "PSA Airlines as American Eagle"
+    }
+   ],
+   "layovers": [
+    {
+     "duration": 30,
+     "name": "Ronald Reagan Washington National Airport",
+     "id": "DCA"
+    }
+   ],
+   "total_duration": 304,
+   "carbon_emissions": {
+    "this_flight": 273000,
+    "typical_for_this_route": 213000,
+    "difference_percent": 28
+   },
+   "price": 660,
+   "type": "Round trip",
+   "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AA.png",
+   "extensions": [
+    "Checked baggage for a fee",
+    "Bag and fare conditions depend on the return flight"
+   ],
+   "booking_token": "WyJDalJJYTFCcVEwWmpSVkoxTlhkQlFtRkxOWGRDUnkwdExTMHRMUzB0TFhCbVlteHNORUZCUVVGQlIzRnhRa2hSVG0xVGRYZEJFZzFCUVRFNU9UZDhRVUUxTXpnMEdnc0lrNE1FRUFJYUExVlRSRGdjY0pPREJBPT0iLFtbIkRUVyIsIjIwMjYtMTItMjgiLCJPUkQiLG51bGwsIkFBIiwiMzU0MiJdLFsiT1JEIiwiMjAyNi0xMi0yOCIsIk1JQSIsbnVsbCwiQUEiLCI4MTciXV0sW1siTUlBIiwiMjAyNy0wMS0wMyIsIkRDQSIsbnVsbCwiQUEiLCIxOTk3Il0sWyJEQ0EiLCIyMDI3LTAxLTAzIiwiRFRXIixudWxsLCJBQSIsIjUzODQiXV1d"
+  },
+  {
+   "flights": [
+    {
+     "departure_airport": {
+      "name": "Miami International Airport",
+      "id": "MIA",
+      "time": "2027-01-03 14:33"
+     },
+     "arrival_airport": {
+      "name": "Detroit Metropolitan Wayne County Airport",
+      "id": "DTW",
+      "time": "2027-01-03 17:49"
+     },
+     "duration": 196,
+     "airplane": "Airbus A319",
+     "airline": "American",
+     "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AA.png",
+     "travel_class": "Economy",
+     "flight_number": "AA 2735",
+     "legroom": "30 in",
+     "extensions": [
+      "Average legroom (30 in)",
+      "Free Wi-Fi",
+      "In-seat power outlet",
+      "Stream media to your device",
+      "Carbon emissions estimate: 206 kg"
+     ]
+    }
+   ],
+   "total_duration": 196,
+   "carbon_emissions": {
+    "this_flight": 206000,
+    "typical_for_this_route": 213000,
+    "difference_percent": -3
+   },
+   "price": 951,
+   "type": "Round trip",
+   "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AA.png",
+   "extensions": [
+    "Checked baggage for a fee",
+    "Bag and fare conditions depend on the return flight"
+   ],
+   "booking_token": "WyJDalJJYTFCcVEwWmpSVkoxTlhkQlFtRkxOWGRDUnkwdExTMHRMUzB0TFhCbVlteHNORUZCUVVGQlIzRnhRa2hSVG0xVGRYZEJFZ1pCUVRJM016VWFDd2pWNWdVUUFob0RWVk5FT0J4dzFlWUYiLFtbIkRUVyIsIjIwMjYtMTItMjgiLCJPUkQiLG51bGwsIkFBIiwiMzU0MiJdLFsiT1JEIiwiMjAyNi0xMi0yOCIsIk1JQSIsbnVsbCwiQUEiLCI4MTciXV0sW1siTUlBIiwiMjAyNy0wMS0wMyIsIkRUVyIsbnVsbCwiQUEiLCIyNzM1Il1dXQ=="
+  }
+ ],
+ "other_flights": [
+  {
+   "flights": [
+    {
+     "departure_airport": {
+      "name": "Miami International Airport",
+      "id": "MIA",
+      "time": "2027-01-03 06:15"
+     },
+     "arrival_airport": {
+      "name": "Hartsfield-Jackson Atlanta International Airport",
+      "id": "ATL",
+      "time": "2027-01-03 08:48"
+     },
+     "duration": 153,
+     "airplane": "Airbus A321neo",
+     "airline": "Frontier",
+     "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/F9.png",
+     "travel_class": "Economy",
+     "flight_number": "F9 2483",
+     "legroom": "28 in",
+     "extensions": [
+      "Below average legroom (28 in)",
+      "Carbon emissions estimate: 73 kg"
+     ]
+    },
+    {
+     "departure_airport": {
+      "name": "Hartsfield-Jackson Atlanta International Airport",
+      "id": "ATL",
+      "time": "2027-01-03 14:10"
+     },
+     "arrival_airport": {
+      "name": "Detroit Metropolitan Wayne County Airport",
+      "id": "DTW",
+      "time": "2027-01-03 16:18"
+     },
+     "duration": 128,
+     "airplane": "Airbus A321",
+     "airline": "Frontier",
+     "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/F9.png",
+     "travel_class": "Economy",
+     "flight_number": "F9 1532",
+     "legroom": "28 in",
+     "extensions": [
+      "Below average legroom (28 in)",
+      "Carbon emissions estimate: 111 kg"
+     ]
+    }
+   ],
+   "layovers": [
+    {
+     "duration": 322,
+     "name": "Hartsfield-Jackson Atlanta International Airport",
+     "id": "ATL"
+    }
+   ],
+   "total_duration": 603,
+   "carbon_emissions": {
+    "this_flight": 186000,
+    "typical_for_this_route": 213000,
+    "difference_percent": -13
+   },
+   "price": 512,
+   "type": "Round trip",
+   "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/F9.png",
+   "extensions": [
+    "Checked baggage for a fee",
+    "Bag and fare conditions depend on the return flight"
+   ],
+   "booking_token": "WyJDalJJYTFCcVEwWmpSVkoxTlhkQlFtRkxOWGRDUnkwdExTMHRMUzB0TFhCbVlteHNORUZCUVVGQlIzRnhRa2hSVG0xVGRYZEJFZzFHT1RJME9ETjhSamt4TlRNeUdnc0lnSkFERUFJYUExVlRSRGdjY0lDUUF3PT0iLFtbIkRUVyIsIjIwMjYtMTItMjgiLCJPUkQiLG51bGwsIkFBIiwiMzU0MiJdLFsiT1JEIiwiMjAyNi0xMi0yOCIsIk1JQSIsbnVsbCwiQUEiLCI4MTciXV0sW1siTUlBIiwiMjAyNy0wMS0wMyIsIkFUTCIsbnVsbCwiRjkiLCIyNDgzIl0sWyJBVEwiLCIyMDI3LTAxLTAzIiwiRFRXIixudWxsLCJGOSIsIjE1MzIiXV1d"
+  },
+  {
+   "flights": [
+    {
+     "departure_airport": {
+      "name": "Miami International Airport",
+      "id": "MIA",
+      "time": "2027-01-03 05:05"
+     },
+     "arrival_airport": {
+      "name": "Chicago O'Hare International Airport",
+      "id": "ORD",
+      "time": "2027-01-03 07:43"
+     },
+     "duration": 218,
+     "airplane": "Boeing 737",
+     "airline": "American",
+     "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AA.png",
+     "travel_class": "Economy",
+     "flight_number": "AA 1204",
+     "legroom": "30 in",
+     "extensions": [
+      "Average legroom (30 in)",
+      "Free Wi-Fi",
+      "In-seat power & USB outlets",
+      "Stream media to your device",
+      "Carbon emissions estimate: 172 kg"
+     ]
+    },
+    {
+     "departure_airport": {
+      "name": "Chicago O'Hare International Airport",
+      "id": "ORD",
+      "time": "2027-01-03 10:35"
+     },
+     "arrival_airport": {
+      "name": "Detroit Metropolitan Wayne County Airport",
+      "id": "DTW",
+      "time": "2027-01-03 13:14"
+     },
+     "duration": 99,
+     "airplane": "Embraer 170",
+     "airline": "American",
+     "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AA.png",
+     "travel_class": "Economy",
+     "flight_number": "AA 3536",
+     "legroom": "30 in",
+     "extensions": [
+      "Average legroom (30 in)",
+      "Free Wi-Fi",
+      "In-seat power & USB outlets",
+      "Stream media to your device",
+      "Carbon emissions estimate: 146 kg"
+     ],
+     "plane_and_crew_by": "Envoy Air as American Eagle"
+    }
+   ],
+   "layovers": [
+    {
+     "duration": 172,
+     "name": "Chicago O'Hare International Airport",
+     "id": "ORD"
+    }
+   ],
+   "total_duration": 489,
+   "carbon_emissions": {
+    "this_flight": 319000,
+    "typical_for_this_route": 213000,
+    "difference_percent": 50
+   },
+   "price": 626,
+   "type": "Round trip",
+   "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AA.png",
+   "extensions": [
+    "Checked baggage for a fee",
+    "Bag and fare conditions depend on the return flight"
+   ],
+   "booking_token": "WyJDalJJYTFCcVEwWmpSVkoxTlhkQlFtRkxOWGRDUnkwdExTMHRMUzB0TFhCbVlteHNORUZCUVVGQlIzRnhRa2hSVG0xVGRYZEJFZzFCUVRFeU1EUjhRVUV6TlRNMkdnc0l6T2dERUFJYUExVlRSRGdjY016b0F3PT0iLFtbIkRUVyIsIjIwMjYtMTItMjgiLCJPUkQiLG51bGwsIkFBIiwiMzU0MiJdLFsiT1JEIiwiMjAyNi0xMi0yOCIsIk1JQSIsbnVsbCwiQUEiLCI4MTciXV0sW1siTUlBIiwiMjAyNy0wMS0wMyIsIk9SRCIsbnVsbCwiQUEiLCIxMjA0Il0sWyJPUkQiLCIyMDI3LTAxLTAzIiwiRFRXIixudWxsLCJBQSIsIjM1MzYiXV1d"
+  }
+ ],
+ "airports": [
+  {
+   "departure": [
+    {
+     "airport": {
+      "id": "DTW",
+      "name": "Detroit Metropolitan Wayne County Airport"
+     },
+     "city": "Detroit",
+     "country": "United States",
+     "country_code": "US",
+     "image": "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcQ6tCKi37Y2EFKBit2BFOdzMPDMIOPD61N33bJ6TPBfGhdv-qnbRdXODK9GFZ4072j7q-CnrkO_vQFBTQ",
+     "thumbnail": "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcSLzktjJPbJWpjXl1ZSYRz56GZ46-c_yoPIjxNBooT6XhL3kRcO9Hgj4d61TOWWofyftp77t-Xphkog3mdEoWczq1_BbvKctQL77uK5nC0"
+    }
+   ],
+   "arrival": [
+    {
+     "airport": {
+      "id": "MIA",
+      "name": "Miami International Airport"
+     },
+     "city": "Miami",
+     "country": "United States",
+     "country_code": "US",
+     "image": "https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcRjsG6ybk9C2oSVnPZUal-6l7EimKLf5gtMAhOumgD16nXBwB4X0lHH3nh-178HKbonabZtnDMdZKfDEQ",
+     "thumbnail": "https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcRScvUK_JtYRXmQWoXHiT98Ajl1KTuUVO40d0Q678OpK1xyyWI8VIkHqzXE9BHfY5R35UpgbeEdcf1IhMDncXwDo29wOABY9MIUzCFLkwU"
+    }
+   ]
+  },
+  {
+   "departure": [
+    {
+     "airport": {
+      "id": "MIA",
+      "name": "Miami International Airport"
+     },
+     "city": "Miami",
+     "country": "United States",
+     "country_code": "US",
+     "image": "https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcRjsG6ybk9C2oSVnPZUal-6l7EimKLf5gtMAhOumgD16nXBwB4X0lHH3nh-178HKbonabZtnDMdZKfDEQ",
+     "thumbnail": "https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcRScvUK_JtYRXmQWoXHiT98Ajl1KTuUVO40d0Q678OpK1xyyWI8VIkHqzXE9BHfY5R35UpgbeEdcf1IhMDncXwDo29wOABY9MIUzCFLkwU"
+    }
+   ],
+   "arrival": [
+    {
+     "airport": {
+      "id": "DTW",
+      "name": "Detroit Metropolitan Wayne County Airport"
+     },
+     "city": "Detroit",
+     "country": "United States",
+     "country_code": "US",
+     "image": "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcQ6tCKi37Y2EFKBit2BFOdzMPDMIOPD61N33bJ6TPBfGhdv-qnbRdXODK9GFZ4072j7q-CnrkO_vQFBTQ",
+     "thumbnail": "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcSLzktjJPbJWpjXl1ZSYRz56GZ46-c_yoPIjxNBooT6XhL3kRcO9Hgj4d61TOWWofyftp77t-Xphkog3mdEoWczq1_BbvKctQL77uK5nC0"
+    }
+   ]
+  }
+ ]
+}

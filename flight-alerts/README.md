@@ -2,8 +2,9 @@
 
 Tracks DTW→MIA for the agreed dates (Dec 28 → Jan 3), stores every reading as
 an append-only panel, and emails the group one digest listing every flight
-under the price ceiling — airline, flight numbers, times, duration, and a
-link to the exact date search on Google Flights.
+under the price ceiling — outbound **and return** flight numbers, times,
+durations, the real round-trip total for that exact combination, and a link
+to Google Flights with the outbound pre-selected.
 
 Design rationale and decisions: **[SPEC.md](SPEC.md)**.
 
@@ -31,12 +32,27 @@ with `fares plan`).
 
 Add as repo secret `SERPAPI_KEY` (*Settings → Secrets and variables → Actions*).
 
-The key is on the **Free plan (250 searches/month)**. One itinerary at 6 sweeps/day
-is 180/month, leaving ~70 for manual runs. `validate_target_budget()` refuses to
-run a config that would overrun the plan. A paid tier would buy either more
-frequent sweeps or a second call per option to resolve the *return* flight
-(`departure_token`), which the digest currently leaves for you to pick on Google
-Flights.
+**Two searches make one exact fare.** A round-trip search lists *outbound*
+options, each priced as the round-trip total *with the cheapest return Google
+found* — which may be a different airline. A second search with that option's
+`departure_token` lists its returns, each with the real total for that
+combination. (Recorded example: the "$512 American" outbound is $512 only with
+a Frontier return; American's own returns start at $650.)
+
+The base sweep is 1 search per sweep, 6 sweeps/day = 180/month, which fits
+every plan including Free (250). Everything the plan has left beyond that goes
+to return lookups, spread over the sweeps remaining in the month
+(`budget.py`, read live from `serpapi.com/account` each run):
+
+| Plan | Searches/mo | Returns resolved per sweep (approx.) |
+|---|---|---|
+| Free | 250 | 1 |
+| Starter ($25) | 1,000 | ~9 (most options) |
+| Developer ($75) | 5,000 | all (cap 15) |
+
+Return lookups go to the cheapest outbounds under the ceiling. Unresolved
+outbounds still appear, marked "return not resolved". Nothing changes in
+config when the plan changes.
 
 ### 3. Email — a Gmail app password
 

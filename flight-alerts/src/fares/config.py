@@ -62,16 +62,19 @@ FALLBACK_TWO_CALL = SweepConfig(
 # rolling 90-day SweepConfig above cannot see it at all.
 #
 # One itinerary: the group settled on Dec 28 -> Jan 3 (2026-09-15), so the
-# date grid collapsed to a single query. The key is on SerpApi's Free plan
-# (250 searches/month, checked 2026-09-15), so 6 sweeps/day = 180/month
-# leaves room for manual runs. 12/day would overrun it.
-SERPAPI_FREE_PLAN = 250
+# date grid collapsed to a single query. 6 sweeps/day = 180 base searches a
+# month, which fits every SerpApi plan including Free (250). Everything the
+# plan has beyond that goes to resolving *return* flights (budget.py), so
+# Starter (1,000) resolves a few per sweep and Developer (5,000) all of them.
+SERPAPI_PLAN_FLOOR = 250
+# Outbound options whose returns one sweep may resolve, at most.
+MAX_RETURNS_PER_SWEEP = 15
 TRIP_LABEL = "New Year's Eve 2026"
 
 NYE_TRIP = TargetTrip(
     departures=(date(2026, 12, 28),),
     returns=(date(2027, 1, 3),),
-    monthly_budget=SERPAPI_FREE_PLAN,
+    monthly_budget=SERPAPI_PLAN_FLOOR,
     sweeps_per_day=6,
     calls_per_query=1,
     min_nights=2,
