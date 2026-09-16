@@ -15,6 +15,10 @@ on:
         description: 'Use fixtures; write nothing, send nothing'
         type: boolean
         default: false
+      test_email:
+        description: 'Send one sample digest to ALERT_RECIPIENTS and stop'
+        type: boolean
+        default: false
 
 concurrency:
   # Two sweeps at once would double-spend quota and race the data push.
@@ -39,7 +43,7 @@ jobs:
         env:
           SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
         run: |
-          if [ "${{ inputs.dry_run }}" = "true" ] || [ -n "$SERPAPI_KEY" ]; then
+          if [ "${{ inputs.dry_run }}" = "true" ] || [ "${{ inputs.test_email }}" = "true" ] || [ -n "$SERPAPI_KEY" ]; then
             echo "ready=true" >> "$GITHUB_OUTPUT"
           else
             echo "ready=false" >> "$GITHUB_OUTPUT"
@@ -81,8 +85,18 @@ jobs:
             echo "no data branch yet - starting a fresh panel"
           fi
 
+      - name: Test email
+        if: steps.creds.outputs.ready == 'true' && inputs.test_email == true
+        working-directory: flight-alerts
+        env:
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          ALERT_RECIPIENTS: ${{ secrets.ALERT_RECIPIENTS }}
+          ALERT_FROM: ${{ secrets.ALERT_FROM }}
+        run: PYTHONPATH=src python -m fares test-email
+
       - name: Sweep
-        if: steps.creds.outputs.ready == 'true'
+        if: steps.creds.outputs.ready == 'true' && inputs.test_email != true
         working-directory: flight-alerts
         env:
           FARES_DATA_DIR: ${{ runner.temp }}/panel/data
@@ -99,14 +113,14 @@ jobs:
           PYTHONPATH=src python -m fares sweep $ARGS
 
       - name: Summarize
-        if: steps.creds.outputs.ready == 'true'
+        if: steps.creds.outputs.ready == 'true' && inputs.test_email != true
         working-directory: flight-alerts
         env:
           FARES_DATA_DIR: ${{ runner.temp }}/panel/data
         run: PYTHONPATH=src python -m fares status >> "$GITHUB_STEP_SUMMARY"
 
       - name: Publish the panel
-        if: steps.creds.outputs.ready == 'true' && inputs.dry_run != true
+        if: steps.creds.outputs.ready == 'true' && inputs.dry_run != true && inputs.test_email != true
         run: |
           PANEL="${RUNNER_TEMP}/panel"
           if [ ! -d "$PANEL/data" ]; then
