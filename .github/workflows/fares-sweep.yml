@@ -19,6 +19,10 @@ on:
         description: 'Send one sample digest to ALERT_RECIPIENTS and stop'
         type: boolean
         default: false
+      record:
+        description: 'Spend 1 search: upload the raw SerpApi response as an artifact and stop'
+        type: boolean
+        default: false
 
 concurrency:
   # Two sweeps at once would double-spend quota and race the data push.
@@ -95,8 +99,26 @@ jobs:
           ALERT_FROM: ${{ secrets.ALERT_FROM }}
         run: PYTHONPATH=src python -m fares test-email
 
+      - name: Record a raw response
+        if: steps.creds.outputs.ready == 'true' && inputs.record == true
+        working-directory: flight-alerts
+        env:
+          SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
+        run: |
+          PYTHONPATH=src python -m fares record --out "$RUNNER_TEMP/serpapi_response.json"
+          # Plan facts only; the key never reaches the log.
+          curl -s "https://serpapi.com/account?api_key=$SERPAPI_KEY" \
+            | python -c 'import json,sys; a=json.load(sys.stdin); print({k:a.get(k) for k in ("plan_name","searches_per_month","plan_searches_left","this_month_usage","account_rate_limit_per_hour")})'
+
+      - uses: actions/upload-artifact@v4
+        if: steps.creds.outputs.ready == 'true' && inputs.record == true
+        with:
+          name: serpapi-response
+          path: ${{ runner.temp }}/serpapi_response.json
+          retention-days: 3
+
       - name: Sweep
-        if: steps.creds.outputs.ready == 'true' && inputs.test_email != true
+        if: steps.creds.outputs.ready == 'true' && inputs.test_email != true && inputs.record != true
         working-directory: flight-alerts
         env:
           FARES_DATA_DIR: ${{ runner.temp }}/panel/data
@@ -113,14 +135,14 @@ jobs:
           PYTHONPATH=src python -m fares sweep $ARGS
 
       - name: Summarize
-        if: steps.creds.outputs.ready == 'true' && inputs.test_email != true
+        if: steps.creds.outputs.ready == 'true' && inputs.test_email != true && inputs.record != true
         working-directory: flight-alerts
         env:
           FARES_DATA_DIR: ${{ runner.temp }}/panel/data
         run: PYTHONPATH=src python -m fares status >> "$GITHUB_STEP_SUMMARY"
 
       - name: Publish the panel
-        if: steps.creds.outputs.ready == 'true' && inputs.dry_run != true && inputs.test_email != true
+        if: steps.creds.outputs.ready == 'true' && inputs.dry_run != true && inputs.test_email != true && inputs.record != true
         run: |
           PANEL="${RUNNER_TEMP}/panel"
           if [ ! -d "$PANEL/data" ]; then

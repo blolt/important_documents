@@ -61,16 +61,14 @@ FALLBACK_TWO_CALL = SweepConfig(
 # weekend. The trip is 111 days out as of 2026-09-11, which is why the
 # rolling 90-day SweepConfig above cannot see it at all.
 #
-# 11 viable itineraries (Dec 31 -> Jan 1 is filtered out by min_nights).
-# At 11 per sweep, the Developer tier buys 12 sweeps/day -- one every two
-# hours -- versus one daily pass over dates we do not care about. For a
-# fixed date with scarce holiday inventory, temporal resolution is worth
-# more than breadth.
+# One itinerary: the group settled on Dec 28 -> Jan 3 (2026-09-15), so the
+# date grid collapsed to a single query. At 12 sweeps/day that is 360
+# searches/month -- well inside even the Starter tier.
 TRIP_LABEL = "New Year's Eve 2026"
 
 NYE_TRIP = TargetTrip(
-    departures=(date(2026, 12, 29), date(2026, 12, 30), date(2026, 12, 31)),
-    returns=(date(2027, 1, 1), date(2027, 1, 2), date(2027, 1, 3), date(2027, 1, 4)),
+    departures=(date(2026, 12, 28),),
+    returns=(date(2027, 1, 3),),
     monthly_budget=SERPAPI_DEVELOPER_TIER,
     sweeps_per_day=12,
     calls_per_query=1,

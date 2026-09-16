@@ -75,19 +75,12 @@ class TestNyeTrip:
 
     def test_fits_the_developer_tier(self):
         validate_target_budget(NYE_TRIP)
-        assert target_monthly_estimate(NYE_TRIP) == 3960
+        assert target_monthly_estimate(NYE_TRIP) == 360
 
-    def test_eleven_viable_itineraries(self):
-        # 3 departures x 4 returns = 12, less Dec 31 -> Jan 1 at one night.
-        assert len(select_target_queries(NYE_TRIP)) == 11
-
-    def test_new_years_eve_departure_is_covered(self):
-        departures = {q.depart for q in select_target_queries(NYE_TRIP)}
-        assert date(2026, 12, 31) in departures
-
-    def test_one_night_new_years_itinerary_is_excluded(self):
-        pairs = {(q.depart, q.ret) for q in select_target_queries(NYE_TRIP)}
-        assert (date(2026, 12, 31), date(2027, 1, 1)) not in pairs
+    def test_single_agreed_itinerary(self):
+        # The group settled on Dec 28 -> Jan 3; nothing else is searched.
+        assert [(q.depart, q.ret) for q in select_target_queries(NYE_TRIP)] == [
+            (date(2026, 12, 28), date(2027, 1, 3))]
 
     def test_sweeps_every_two_hours(self):
         assert sweep_interval_hours(NYE_TRIP) == 2

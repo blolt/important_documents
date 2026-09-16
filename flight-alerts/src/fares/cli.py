@@ -196,6 +196,24 @@ def cmd_test_email(args) -> int:
     return 0
 
 
+def cmd_record(args) -> int:
+    """Fetch one real response for the first itinerary and write it verbatim.
+
+    Costs one search. The README asks for this so normalize.py can be
+    validated against a recorded shape rather than the documented one.
+    """
+    api_key = os.environ.get("SERPAPI_KEY")
+    if not api_key:
+        print("SERPAPI_KEY not set", file=sys.stderr)
+        return 2
+    query = select_target_queries(config.ACTIVE)[0]
+    payload = serpapi.fetch(query, api_key, config.ORIGIN, config.DESTINATION)
+    out = Path(args.out)
+    out.write_text(json.dumps(payload, indent=1))
+    print(f"wrote {out} ({out.stat().st_size} bytes) for {query.depart}->{query.ret}")
+    return 0
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(prog="fares", description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
@@ -212,6 +230,10 @@ def main(argv=None) -> int:
 
     p = sub.add_parser("status", help="summarize collected data")
     p.set_defaults(func=cmd_status)
+
+    p = sub.add_parser("record", help="fetch one real response and save it verbatim (1 search)")
+    p.add_argument("--out", required=True)
+    p.set_defaults(func=cmd_record)
 
     p = sub.add_parser("test-email", help="send one sample digest to the list")
     p.set_defaults(func=cmd_test_email)
