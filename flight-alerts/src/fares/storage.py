@@ -34,6 +34,13 @@ def to_record(obs: Observation) -> dict:
         "price_level": obs.price_level,
         "typical_low": obs.typical_low,
         "typical_high": obs.typical_high,
+        "airline": obs.airline,
+        "flight_numbers": list(obs.flight_numbers),
+        "depart_time": obs.depart_time,
+        "arrive_time": obs.arrive_time,
+        "duration_min": obs.duration_min,
+        "layovers": list(obs.layovers),
+        "url": obs.url,
     }
 
 
@@ -48,6 +55,13 @@ def from_record(rec: dict) -> Observation:
         price_level=rec.get("price_level"),
         typical_low=rec.get("typical_low"),
         typical_high=rec.get("typical_high"),
+        airline=rec.get("airline"),
+        flight_numbers=tuple(rec.get("flight_numbers") or ()),
+        depart_time=rec.get("depart_time"),
+        arrive_time=rec.get("arrive_time"),
+        duration_min=rec.get("duration_min"),
+        layovers=tuple(rec.get("layovers") or ()),
+        url=rec.get("url"),
     )
 
 

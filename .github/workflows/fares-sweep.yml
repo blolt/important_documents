@@ -2,10 +2,10 @@ name: fares sweep
 
 on:
   schedule:
-    # Every 2 hours. 11 itineraries x 12 sweeps/day = 132 calls/day,
-    # ~3,960/month against a 5,000 plan. For a fixed date with scarce
-    # holiday inventory, sampling often beats sampling broadly.
-    - cron: '0 */2 * * *'
+    # Every 4 hours. 1 itinerary x 6 sweeps/day = 180/month against the
+    # 250-search free plan, leaving ~70 for manual runs. Must match
+    # sweeps_per_day in config.py.
+    - cron: '0 */4 * * *'
   workflow_dispatch:
     inputs:
       limit:

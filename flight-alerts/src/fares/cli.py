@@ -17,7 +17,8 @@ from pathlib import Path
 
 from . import config, email_alert, notify, serpapi, storage
 from .decide import select_alerts, should_alert
-from .normalize import MalformedResponse, cheapest, normalize
+from .models import Decision
+from .normalize import MalformedResponse, normalize
 from .storage import itinerary_key
 from .sweep import (
     select_target_queries,
@@ -31,7 +32,8 @@ ROOT = Path(__file__).resolve().parents[2]
 # Overridable so CI can point the panel at a worktree on a dedicated data
 # branch, keeping ~1,300 automated data commits out of the code history.
 DATA = Path(os.environ.get("FARES_DATA_DIR") or ROOT / "data")
-FIXTURE = ROOT / "tests" / "fixtures" / "SYNTHETIC_dtw_mia_round_trip.json"
+# A recorded response (2026-09-15), so dry runs and test emails show real flights.
+FIXTURE = ROOT / "tests" / "fixtures" / "real_dtw_mia_2026-12-28.json"
 
 
 def _now() -> datetime:
@@ -138,11 +140,19 @@ def cmd_sweep(args) -> int:
             continue
 
         collected.extend(observations)
-        best = cheapest(observations)
-        if best is not None:
+        # Every distinct flight option is a candidate, cheapest first, so the
+        # digest lists each flight under the ceiling rather than one fare per
+        # itinerary. Identical flight numbers at different prices collapse to
+        # the cheapest.
+        seen: set = set()
+        for obs in sorted(observations, key=lambda o: o.price_usd):
+            key = obs.flight_numbers or (obs.carrier, obs.stops, obs.price_usd)
+            if key in seen:
+                continue
+            seen.add(key)
             # Comparable history is this itinerary's own record.
-            comparable = history.get(itinerary_key(best), [])
-            candidates.append((best, should_alert(best, comparable, policy, alerts, now)))
+            comparable = history.get(itinerary_key(obs), [])
+            candidates.append((obs, should_alert(obs, comparable, policy, alerts, now)))
 
     selected = select_alerts(candidates, policy)
     suppressed = sum(1 for _, d in candidates if d.alert) - len(selected)
@@ -183,15 +193,19 @@ def cmd_test_email(args) -> int:
     observations = normalize(json.loads(FIXTURE.read_text()), now,
                              query.depart, query.ret)
     policy = config.load_policy(ROOT / "policy.json")
-    candidates = [(o, should_alert(o, [], policy, [], now)) for o in observations]
-    selected = select_alerts(candidates, policy)
+    # The policy is bypassed on purpose: this proves delivery and format, and
+    # must send even when nothing currently clears the ceiling.
+    cheapest_few = sorted(observations, key=lambda o: o.price_usd)[:5]
+    selected = [(o, Decision(True, "test_email", o.price_usd)) for o in cheapest_few]
     if not selected:
-        print("fixture produced no alerts; nothing to send", file=sys.stderr)
+        print("fixture produced no observations; nothing to send", file=sys.stderr)
         return 1
 
     print(f"sending sample digest to: {', '.join(smtp.recipients)}")
-    subject = email_alert.send_digest(smtp, selected, config.ORIGIN,
-                                      config.DESTINATION, config.TRIP_LABEL)
+    subject, text, html = email_alert.format_digest(
+        selected, config.ORIGIN, config.DESTINATION, config.TRIP_LABEL)
+    subject = "[TEST - recorded data, not live] " + subject
+    email_alert._default_send(smtp, email_alert.build_message(smtp, subject, text, html))
     print(f"sent: {subject}")
     return 0
 

@@ -1,8 +1,9 @@
 # DTW → MIA fare alerts — New Year's Eve 2026
 
-Tracks the 11 viable DTW→MIA itineraries around NYE, stores every reading as
-an append-only panel, and emails the group one digest when a fare is cheap
-against its own history.
+Tracks DTW→MIA for the agreed dates (Dec 28 → Jan 3), stores every reading as
+an append-only panel, and emails the group one digest listing every flight
+under the price ceiling — airline, flight numbers, times, duration, and a
+link to the exact date search on Google Flights.
 
 Design rationale and decisions: **[SPEC.md](SPEC.md)**.
 
@@ -15,33 +16,27 @@ full pipeline runs against fixtures.
 
 ```
 DTW -> MIA · New Year's Eve 2026
-  11 itineraries, swept every 2h (12x/day)
-  132 calls/day, ~3960/month of 5000 (79%)
+  1 itinerary, swept every 4h (6x/day)
+  6 calls/day, ~180/month of 250 (72%)
 ```
 
-### 1. Confirm the dates — 30 seconds
+### 1. The dates
 
-NYE 2026 is a **Thursday**, so the grid is:
-
-- **Departures:** Dec 29 (Tue), Dec 30 (Wed), Dec 31 (Thu)
-- **Returns:** Jan 1 (Fri), Jan 2 (Sat), Jan 3 (Sun), Jan 4 (Mon)
-
-11 itineraries, not 12 — Dec 31 → Jan 1 is filtered out as a one-night trip
-(`min_nights`). Edit `NYE_TRIP` in `src/fares/config.py` if you want a
-different spread. **If your pals are flying from other cities, tell me** —
-that's a multi-origin change, not a config tweak.
+One itinerary: **Dec 28 (Mon) → Jan 3 (Sun)**, 6 nights. Edit `NYE_TRIP` in
+`src/fares/config.py` to change it; add more departures/returns and it becomes a
+grid again (each extra pair costs one search per sweep, so re-check the budget
+with `fares plan`).
 
 ### 2. SerpApi key
 
-**Developer tier, $75/mo (5,000 searches).** Add as repo secret `SERPAPI_KEY`
-(*Settings → Secrets and variables → Actions*).
+Add as repo secret `SERPAPI_KEY` (*Settings → Secrets and variables → Actions*).
 
-> **You may not need the $75 tier.** A fixed-date trip is only 11 itineraries,
-> so the Starter tier ($25/mo, 1,000 searches) covers **3 sweeps/day** — every
-> 8 hours, 990/month. The $75 tier buys sweeps every 2 hours instead. For
-> scarce holiday inventory I'd keep the faster cadence, but it's $50/mo for
-> latency and that's your call. To downgrade: set `sweeps_per_day=3` and
-> `monthly_budget=1000` in `config.py`; `validate_target_budget()` enforces it.
+The key is on the **Free plan (250 searches/month)**. One itinerary at 6 sweeps/day
+is 180/month, leaving ~70 for manual runs. `validate_target_budget()` refuses to
+run a config that would overrun the plan. A paid tier would buy either more
+frequent sweeps or a second call per option to resolve the *return* flight
+(`departure_token`), which the digest currently leaves for you to pick on Google
+Flights.
 
 ### 3. Email — a Gmail app password
 
@@ -64,11 +59,14 @@ than from a transactional service your friends' spam filters have never seen.
 addresses should not be committed to a repo, and this one also holds your
 resume.
 
-Then verify delivery before it can surprise anyone:
+Then verify delivery before it can surprise anyone (or trigger the workflow
+with `test_email` checked):
 
 ```bash
-PYTHONPATH=src python -m fares test-email    # one sample digest, built from the fixture
+PYTHONPATH=src python -m fares test-email    # one sample digest from the recorded response
 ```
+
+Test digests are tagged `[TEST - recorded data, not live]` in the subject.
 
 **Put only your own address in `ALERT_RECIPIENTS` first.** Confirm the digest
 looks right in your inbox, *then* add your pals. Recipients go in `To:`, so
@@ -77,26 +75,14 @@ but it's worth knowing before you send.
 
 `NTFY_TOPIC` still works as a fallback if email config is absent.
 
-### 4. Record a real API response — please do this one
+### 4. Recorded response
 
-```bash
-curl "https://serpapi.com/search?engine=google_flights&departure_id=DTW\
-&arrival_id=MIA&outbound_date=2026-12-30&return_date=2027-01-03\
-&currency=USD&type=1&api_key=$SERPAPI_KEY" \
-  > tests/fixtures/real_dtw_mia_nye.json
-```
-
-`normalize.py` is written against SerpApi's *documented* response shape, not a
-recorded one. `TestFixtureContract` parametrizes over every file in
-`tests/fixtures/`, so dropping that JSON in validates the parser against
-reality with no new test to write — and a failure names the wrong assumption.
-
-**While you're in there, check one thing:** does `price` on a `type=1` search
-give the *round-trip total*, or does a total need a second call with
-`departure_token`? If it needs two, set `calls_per_query=2` in `NYE_TRIP` —
-the budget becomes 7,920/month and `validate_target_budget()` will refuse to
-run rather than exhaust the plan mid-month. Dropping to `sweeps_per_day=6`
-brings it back to 3,960.
+`tests/fixtures/real_dtw_mia_2026-12-28.json` is a real response recorded on
+2026-09-15 (trigger the workflow with `record` checked to take a fresh one; it
+lands as an artifact). Findings: a round-trip (`type=1`) search returns
+**outbound options only**, each priced as the **round-trip total**, with a
+`departure_token` for a second call that lists returns. `TestFixtureContract`
+runs over every fixture, so the parser is validated against this shape.
 
 ### 5. Your alert policy — edit `policy.json`
 
@@ -128,13 +114,13 @@ PYTHONPATH=src python -m pytest -q
 PYTHONPATH=src python -m fares sweep --limit 3 # first live run: spend 3 searches, not 11
 ```
 
-Once secrets are set, `.github/workflows/fares-sweep.yml` runs every 2 hours.
-Trigger it by hand from the Actions tab first — it takes a `dry_run` input.
+Once secrets are set, `.github/workflows/fares-sweep.yml` runs every 4 hours.
+Trigger it by hand from the Actions tab — inputs: `dry_run`, `limit`, `test_email`, `record`.
 
 ### Where the data lives
 
 Observations are committed to a dedicated **`fares-data`** branch, not to the
-code branch. At 12 sweeps/day that's ~1,300 automated commits by NYE, and they
+code branch. At 6 sweeps/day that's ~600 automated commits by NYE, and they
 have no business in the history of a repo that holds your resume. The workflow
 restores the panel from that branch each run via a git worktree, appends, and
 pushes back. Both the fresh-start and accumulate paths were verified before
@@ -142,11 +128,13 @@ shipping.
 
 ## How it decides
 
-An observation alerts only if **all** of: under your ceiling (bag-adjusted),
-in the cheapest `percentile` of that itinerary's own history, not rated `high`
-by Google, not a repeat inside `debounce_hours` *unless* it dropped
-`renotify_drop_usd` further, and within `max_alerts_per_sweep` of the sweep's
-cheapest.
+Every distinct flight option in a sweep is a candidate. One alerts only if
+**all** of: under your ceiling (bag-adjusted), not a repeat inside
+`debounce_hours` *unless* it dropped `renotify_drop_usd` below the last
+announced price, and within `max_alerts_per_sweep` of the sweep's cheapest.
+Two further gates are **off** in `policy.json` (2026-09-15) but available:
+`percentile` (cheapest decile of that itinerary's own history) and
+`veto_google_high` (Google's own "high" rating blocks an alert).
 
 Comparison is **per itinerary**, not per lead-time bucket. "Is Dec 30 → Jan 3
 cheap against what that exact trip has been going for" is a sharper question

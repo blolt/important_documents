@@ -75,15 +75,16 @@ class TestNyeTrip:
 
     def test_fits_the_developer_tier(self):
         validate_target_budget(NYE_TRIP)
-        assert target_monthly_estimate(NYE_TRIP) == 360
+        assert target_monthly_estimate(NYE_TRIP) == 180
 
     def test_single_agreed_itinerary(self):
         # The group settled on Dec 28 -> Jan 3; nothing else is searched.
         assert [(q.depart, q.ret) for q in select_target_queries(NYE_TRIP)] == [
             (date(2026, 12, 28), date(2027, 1, 3))]
 
-    def test_sweeps_every_two_hours(self):
-        assert sweep_interval_hours(NYE_TRIP) == 2
+    def test_sweeps_every_four_hours(self):
+        # 6/day x 1 itinerary = 180/month against the 250 free plan.
+        assert sweep_interval_hours(NYE_TRIP) == 4
 
     def test_trip_is_beyond_the_rolling_horizon(self):
         # The reason fixed-date targeting exists: on 2026-09-11 the trip is

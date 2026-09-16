@@ -57,6 +57,17 @@ class Observation:
     price_level: str | None = None
     typical_low: int | None = None
     typical_high: int | None = None
+    # Flight detail for the digest. Outbound legs only: a round-trip
+    # response lists outbound options priced as round-trip totals, and the
+    # return is picked on Google Flights (verified against a recorded
+    # response, 2026-09-15). All optional so older stored rows still load.
+    airline: str | None = None
+    flight_numbers: tuple[str, ...] = ()
+    depart_time: str | None = None     # "YYYY-MM-DD HH:MM", local, first leg
+    arrive_time: str | None = None     # last leg
+    duration_min: int | None = None    # total incl. layovers
+    layovers: tuple[str, ...] = ()     # airport ids
+    url: str | None = None             # Google Flights search for these exact dates
 
     @property
     def lead_days(self) -> int:

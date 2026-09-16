@@ -56,15 +56,79 @@ class SmtpConfig:
         )
 
 
-def _fare_line(obs, decision) -> str:
+def _search_url(origin: str, destination: str, obs) -> str:
+    """The exact Google Flights search for this itinerary.
+
+    SerpApi hands back the dated search URL; fall back to a natural-language
+    query for older rows recorded before that field was kept. Google Flights
+    has no public URL for one selected flight, so the link opens the exact
+    date search and the row's flight numbers say which result to pick.
+    """
+    if obs.url:
+        return obs.url
+    import urllib.parse
+    q = f"flights from {origin} to {destination} on {obs.depart.isoformat()}"
+    if obs.ret:
+        q += f" returning {obs.ret.isoformat()}"
+    return "https://www.google.com/travel/flights?" + urllib.parse.urlencode({"q": q})
+
+
+def _clock(stamp: str | None) -> str | None:
+    """'2026-12-28 16:34' -> '4:34 PM'."""
+    if not stamp or " " not in stamp:
+        return None
+    hh, mm = stamp.split(" ", 1)[1].split(":")[:2]
+    h = int(hh)
+    return f"{(h % 12) or 12}:{mm} {'AM' if h < 12 else 'PM'}"
+
+
+def _next_day(obs) -> bool:
+    return bool(obs.depart_time and obs.arrive_time
+                and obs.arrive_time[:10] > obs.depart_time[:10])
+
+
+def _duration(minutes: int | None) -> str | None:
+    if minutes is None:
+        return None
+    return f"{minutes // 60}h {minutes % 60:02d}m"
+
+
+def _routing(obs) -> str:
+    if obs.is_nonstop:
+        return "nonstop"
+    via = f" via {'/'.join(obs.layovers)}" if obs.layovers else ""
+    return f"{obs.stops} stop{'s' if obs.stops > 1 else ''}{via}"
+
+
+def _flight_label(obs) -> str:
+    """'American AA 3542 / AA 817', or just the carrier code if that is all we have."""
+    name = obs.airline or obs.carrier
+    if obs.flight_numbers:
+        return f"{name} {' / '.join(obs.flight_numbers)}"
+    return name
+
+
+def _times(obs) -> str | None:
+    dep, arr = _clock(obs.depart_time), _clock(obs.arrive_time)
+    if not (dep and arr):
+        return None
+    out = f"{dep} → {arr}"
+    if _next_day(obs):
+        out += " (+1 day)"
+    if (dur := _duration(obs.duration_min)):
+        out += f" · {dur}"
+    return out
+
+
+def _fare_line(obs, decision, origin: str = "", destination: str = "") -> str:
     price = decision.effective_price_usd or obs.price_usd
     nights = (obs.ret - obs.depart).days if obs.ret else None
-    routing = "nonstop" if obs.is_nonstop else f"{obs.stops} stop"
-    parts = [
-        f"${price} — {obs.carrier}, {routing}",
-        f"  Out {obs.depart:%a %b %-d}"
-        + (f" · back {obs.ret:%a %b %-d} ({nights} nights)" if nights else " · one way"),
-    ]
+    parts = [f"${price} — {_flight_label(obs)}, {_routing(obs)}"]
+    when = f"  Out {obs.depart:%a %b %-d}"
+    if (t := _times(obs)):
+        when += f" {t}"
+    when += f" · back {obs.ret:%a %b %-d} ({nights} nights)" if nights else " · one way"
+    parts.append(when)
     if decision.percentile_rank is not None:
         parts.append(f"  Cheapest {decision.percentile_rank:.0%} of readings "
                      f"we've logged for these dates")
@@ -72,6 +136,7 @@ def _fare_line(obs, decision) -> str:
         parts.append(f"  Google's typical range: ${obs.typical_low}–${obs.typical_high}")
     if price != obs.price_usd:
         parts.append(f"  (${obs.price_usd} fare + ${price - obs.price_usd} bag)")
+    parts.append(f"  {_search_url(origin, destination, obs)}")
     return "\n".join(parts)
 
 
@@ -91,9 +156,9 @@ def format_digest(selected: list[Candidate], origin: str, destination: str,
     text = "\n\n".join([
         f"{origin} → {destination} · {trip_label}",
         f"{count} fare{'s' if count > 1 else ''} worth a look:",
-        *[_fare_line(o, d) for o, d in selected],
-        "Prices move. Check before you get excited:\n"
-        f"https://www.google.com/travel/flights?q=flights%20from%20{origin}%20to%20{destination}",
+        *[_fare_line(o, d, origin, destination) for o, d in selected],
+        "Prices move. Check before you get excited. Each link opens the exact "
+        "date search on Google Flights; pick the row with the flight numbers shown.",
         "— Sent by John's fare tracker. Reply-all to argue about dates.",
     ])
 
@@ -101,17 +166,23 @@ def format_digest(selected: list[Candidate], origin: str, destination: str,
     for obs, decision in selected:
         price = decision.effective_price_usd or obs.price_usd
         nights = (obs.ret - obs.depart).days if obs.ret else None
-        detail = [f"{obs.carrier} · {'nonstop' if obs.is_nonstop else f'{obs.stops} stop'}"]
+        detail = [_routing(obs)]
         if nights:
             detail.append(f"{nights} nights")
         if decision.percentile_rank is not None:
             detail.append(f"cheapest {decision.percentile_rank:.0%} on record")
+        if price != obs.price_usd:
+            detail.append(f"${obs.price_usd} fare + ${price - obs.price_usd} bag")
+        times = _times(obs)
+        link = _search_url(origin, destination, obs)
         rows.append(f"""
       <tr>
-        <td style="padding:14px 16px;border-bottom:1px solid #e6e6e6;font:600 22px/1.2 -apple-system,Segoe UI,Roboto,sans-serif;color:#111;white-space:nowrap">${price}</td>
+        <td style="padding:14px 16px;border-bottom:1px solid #e6e6e6;font:600 22px/1.2 -apple-system,Segoe UI,Roboto,sans-serif;color:#111;white-space:nowrap;vertical-align:top">${price}</td>
         <td style="padding:14px 16px;border-bottom:1px solid #e6e6e6;font:400 14px/1.5 -apple-system,Segoe UI,Roboto,sans-serif;color:#111">
-          <strong>{obs.depart:%a %b %-d}</strong>{f' &rarr; <strong>{obs.ret:%a %b %-d}</strong>' if obs.ret else ' (one way)'}<br>
-          <span style="color:#666">{' · '.join(detail)}</span>
+          <strong>{_flight_label(obs)}</strong><br>
+          <strong>{obs.depart:%a %b %-d}</strong>{f' {times}' if times else ''}{f' &rarr; back <strong>{obs.ret:%a %b %-d}</strong>' if obs.ret else ' (one way)'}<br>
+          <span style="color:#666">{' · '.join(detail)}</span><br>
+          <a href="{link}" style="color:#0a58ca">Open on Google Flights</a>
         </td>
       </tr>""")
 
@@ -124,8 +195,8 @@ def format_digest(selected: list[Candidate], origin: str, destination: str,
     </td></tr>
     <tr><td><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">{''.join(rows)}</table></td></tr>
     <tr><td style="padding:16px;font:400 12px/1.5 -apple-system,Segoe UI,Roboto,sans-serif;color:#777">
-      Prices move fast — verify before booking.
-      <a href="https://www.google.com/travel/flights?q=flights%20from%20{origin}%20to%20{destination}" style="color:#0a58ca">Open Google Flights</a><br>
+      Prices move fast — verify before booking. Google Flights can't link to one selected flight,
+      so each link opens the exact date search; pick the row with the flight numbers shown.<br>
       Sent by John's fare tracker. Reply-all to argue about dates.
     </td></tr>
   </table>

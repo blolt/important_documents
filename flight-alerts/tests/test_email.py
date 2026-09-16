@@ -155,3 +155,41 @@ class TestSendDigest:
         subject = send_digest(CONFIG, [cand(198)], "DTW", "MIA", "NYE 2026",
                               send=lambda c, m: None)
         assert "$198" in subject
+
+
+class TestFlightDetailInDigest:
+    def _obs(self, **kw):
+        from datetime import date, datetime
+        from fares.models import Observation
+        base = dict(observed_at=datetime(2026, 9, 15, 22), depart=date(2026, 12, 28),
+                    ret=date(2027, 1, 3), price_usd=512, carrier="AA", stops=1,
+                    airline="American", flight_numbers=("AA 3542", "AA 817"),
+                    depart_time="2026-12-28 16:34", arrive_time="2026-12-28 22:25",
+                    duration_min=351, layovers=("ORD",),
+                    url="https://www.google.com/travel/flights?tfs=abc")
+        base.update(kw)
+        return Observation(**base)
+
+    def _digest(self, obs):
+        from fares.models import Decision
+        return format_digest([(obs, Decision(True, "x", obs.price_usd))], "DTW", "MIA", "NYE 2026")
+
+    def test_airline_flight_numbers_times_and_duration_appear(self):
+        _, text, html = self._digest(self._obs())
+        for needle in ("American AA 3542 / AA 817", "4:34 PM", "10:25 PM", "5h 51m", "via ORD"):
+            assert needle in text and needle in html
+
+    def test_each_fare_links_to_its_exact_date_search(self):
+        _, text, html = self._digest(self._obs())
+        assert "https://www.google.com/travel/flights?tfs=abc" in text
+        assert 'href="https://www.google.com/travel/flights?tfs=abc"' in html
+
+    def test_overnight_arrival_is_flagged(self):
+        _, text, _ = self._digest(self._obs(arrive_time="2026-12-29 00:52"))
+        assert "12:52 AM (+1 day)" in text
+
+    def test_missing_detail_falls_back_to_a_dated_query_link(self):
+        _, text, _ = self._digest(self._obs(airline=None, flight_numbers=(), depart_time=None,
+                                            arrive_time=None, duration_min=None, url=None))
+        assert "$512 — AA, 1 stop" in text
+        assert "q=flights+from+DTW+to+MIA+on+2026-12-28+returning+2027-01-03" in text

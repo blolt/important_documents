@@ -131,3 +131,37 @@ class TestFixtureContract:
         from fares.storage import from_record, to_record
         for o in normalize(json.loads(path.read_text()), OBSERVED, DEPART, RET):
             assert from_record(to_record(o)) == o
+
+
+class TestFlightDetail:
+    """Fields the digest shows, parsed from the recorded 2026-09-15 response."""
+
+    def _real(self):
+        path = FIXTURES / "real_dtw_mia_2026-12-28.json"
+        return normalize(json.loads(path.read_text()), OBSERVED, DEPART, RET)
+
+    def test_cheapest_real_option_carries_full_detail(self):
+        o = min(self._real(), key=lambda o: o.price_usd)
+        assert o.price_usd == 512
+        assert o.airline == "American" and o.carrier == "AA"
+        assert o.flight_numbers == ("AA 3542", "AA 817")
+        assert o.depart_time == "2026-12-28 16:34"
+        assert o.arrive_time == "2026-12-28 22:25"
+        assert o.duration_min == 351
+        assert o.layovers == ("ORD",) and o.stops == 1
+
+    def test_google_flights_url_is_kept_from_search_metadata(self):
+        urls = {o.url for o in self._real()}
+        assert len(urls) == 1
+        assert next(iter(urls)).startswith("https://www.google.com/travel/flights?")
+
+    def test_synthetic_fixture_without_metadata_has_no_url(self):
+        path = FIXTURES / "SYNTHETIC_dtw_mia_round_trip.json"
+        for o in normalize(json.loads(path.read_text()), OBSERVED, DEPART, RET):
+            assert o.url is None
+
+    def test_old_records_without_detail_still_load(self):
+        from fares.storage import from_record
+        o = from_record({"observed_at": "2026-09-16T01:48:00", "depart": "2026-12-29",
+                         "ret": "2027-01-01", "price_usd": 348, "carrier": "F9", "stops": 1})
+        assert o.flight_numbers == () and o.url is None and o.duration_min is None

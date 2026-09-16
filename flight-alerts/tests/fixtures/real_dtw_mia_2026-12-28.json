@@ -1,0 +1,1146 @@
+{
+ "search_metadata": {
+  "id": "6aaa019e532a176ca4215814",
+  "status": "Success",
+  "json_endpoint": "https://serpapi.com/searches/09sNukPy_efNl3AfRGxxCRtn0b60OPzLU7cMjkyVkmQ/6aaa019e532a176ca4215814.json",
+  "markdown_endpoint": "https://serpapi.com/searches/09sNukPy_efNl3AfRGxxCRtn0b60OPzLU7cMjkyVkmQ/6aaa019e532a176ca4215814.md",
+  "created_at": "2026-09-16 02:40:30 UTC",
+  "processed_at": "2026-09-16 02:40:30 UTC",
+  "google_flights_url": "https://www.google.com/travel/flights?hl=en&gl=us&curr=USD&tfs=CBwQAhoeEgoyMDI2LTEyLTI4agcIARIDRFRXcgcIARIDTUlBGh4SCjIwMjctMDEtMDNqBwgBEgNNSUFyBwgBEgNEVFdAAUgBcAGYAQE&tfu=EgIIAQ",
+  "raw_html_file": "https://serpapi.com/searches/09sNukPy_efNl3AfRGxxCRtn0b60OPzLU7cMjkyVkmQ/6aaa019e532a176ca4215814.html",
+  "prettify_html_file": "https://serpapi.com/searches/09sNukPy_efNl3AfRGxxCRtn0b60OPzLU7cMjkyVkmQ/6aaa019e532a176ca4215814.prettify",
+  "total_time_taken": 1.09
+ },
+ "search_parameters": {
+  "engine": "google_flights",
+  "hl": "en",
+  "gl": "us",
+  "type": "1",
+  "departure_id": "DTW",
+  "arrival_id": "MIA",
+  "outbound_date": "2026-12-28",
+  "return_date": "2027-01-03",
+  "currency": "USD"
+ },
+ "best_flights": [
+  {
+   "flights": [
+    {
+     "departure_airport": {
+      "name": "Detroit Metropolitan Wayne County Airport",
+      "id": "DTW",
+      "time": "2026-12-28 16:34"
+     },
+     "arrival_airport": {
+      "name": "Chicago O'Hare International Airport",
+      "id": "ORD",
+      "time": "2026-12-28 17:13"
+     },
+     "duration": 99,
+     "airplane": "Embraer 170",
+     "airline": "American",
+     "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AA.png",
+     "travel_class": "Economy",
+     "flight_number": "AA 3542",
+     "legroom": "30 in",
+     "extensions": [
+      "Average legroom (30 in)",
+      "Free Wi-Fi",
+      "In-seat power & USB outlets",
+      "Stream media to your device",
+      "Carbon emissions estimate: 119 kg"
+     ],
+     "plane_and_crew_by": "Envoy Air as American Eagle"
+    },
+    {
+     "departure_airport": {
+      "name": "Chicago O'Hare International Airport",
+      "id": "ORD",
+      "time": "2026-12-28 17:59"
+     },
+     "arrival_airport": {
+      "name": "Miami International Airport",
+      "id": "MIA",
+      "time": "2026-12-28 22:25"
+     },
+     "duration": 206,
+     "airplane": "Airbus A321",
+     "airline": "American",
+     "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AA.png",
+     "travel_class": "Economy",
+     "flight_number": "AA 817",
+     "legroom": "30 in",
+     "extensions": [
+      "Average legroom (30 in)",
+      "Free Wi-Fi",
+      "In-seat power & USB outlets",
+      "Stream media to your device",
+      "Carbon emissions estimate: 181 kg"
+     ]
+    }
+   ],
+   "layovers": [
+    {
+     "duration": 46,
+     "name": "Chicago O'Hare International Airport",
+     "id": "ORD"
+    }
+   ],
+   "total_duration": 351,
+   "carbon_emissions": {
+    "this_flight": 302000,
+    "typical_for_this_route": 222000,
+    "difference_percent": 36
+   },
+   "price": 512,
+   "type": "Round trip",
+   "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AA.png",
+   "extensions": [
+    "Checked baggage for a fee",
+    "Bag and fare conditions depend on the return flight"
+   ],
+   "departure_token": "WyJDalJJYVdaRmFIaFdjemRUY1hOQlFtWmZOVUZDUnkwdExTMHRMUzB0TFMxMmRHdHBNVUZCUVVGQlIzRnhRVm8wVGpkRU5VdEJFZ3hCUVRNMU5ESjhRVUU0TVRjYUN3aUFrQU1RQWhvRFZWTkVPQnh3Z0pBRCIsW1siRFRXIiwiMjAyNi0xMi0yOCIsIk9SRCIsbnVsbCwiQUEiLCIzNTQyIl0sWyJPUkQiLCIyMDI2LTEyLTI4IiwiTUlBIixudWxsLCJBQSIsIjgxNyJdXV0="
+  },
+  {
+   "flights": [
+    {
+     "departure_airport": {
+      "name": "Detroit Metropolitan Wayne County Airport",
+      "id": "DTW",
+      "time": "2026-12-28 06:00"
+     },
+     "arrival_airport": {
+      "name": "Miami International Airport",
+      "id": "MIA",
+      "time": "2026-12-28 09:15"
+     },
+     "duration": 195,
+     "airplane": "Boeing 737",
+     "airline": "American",
+     "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AA.png",
+     "travel_class": "Economy",
+     "flight_number": "AA 1020",
+     "legroom": "30 in",
+     "extensions": [
+      "Average legroom (30 in)",
+      "Free Wi-Fi",
+      "In-seat power & USB outlets",
+      "Stream media to your device",
+      "Carbon emissions estimate: 163 kg"
+     ]
+    }
+   ],
+   "total_duration": 195,
+   "carbon_emissions": {
+    "this_flight": 164000,
+    "typical_for_this_route": 222000,
+    "difference_percent": -26
+   },
+   "price": 745,
+   "type": "Round trip",
+   "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AA.png",
+   "extensions": [
+    "Checked baggage for a fee",
+    "Bag and fare conditions depend on the return flight"
+   ],
+   "departure_token": "WyJDalJJYVdaRmFIaFdjemRUY1hOQlFtWmZOVUZDUnkwdExTMHRMUzB0TFMxMmRHdHBNVUZCUVVGQlIzRnhRVm8wVGpkRU5VdEJFZ1pCUVRFd01qQWFDd2pkeFFRUUFob0RWVk5FT0J4dzNjVUUiLFtbIkRUVyIsIjIwMjYtMTItMjgiLCJNSUEiLG51bGwsIkFBIiwiMTAyMCJdXV0="
+  },
+  {
+   "flights": [
+    {
+     "departure_airport": {
+      "name": "Detroit Metropolitan Wayne County Airport",
+      "id": "DTW",
+      "time": "2026-12-28 18:33"
+     },
+     "arrival_airport": {
+      "name": "Miami International Airport",
+      "id": "MIA",
+      "time": "2026-12-28 21:51"
+     },
+     "duration": 198,
+     "airplane": "Airbus A319",
+     "airline": "American",
+     "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AA.png",
+     "travel_class": "Economy",
+     "flight_number": "AA 2735",
+     "legroom": "30 in",
+     "extensions": [
+      "Average legroom (30 in)",
+      "Free Wi-Fi",
+      "In-seat power outlet",
+      "Stream media to your device",
+      "Carbon emissions estimate: 194 kg"
+     ]
+    }
+   ],
+   "total_duration": 198,
+   "carbon_emissions": {
+    "this_flight": 195000,
+    "typical_for_this_route": 222000,
+    "difference_percent": -12
+   },
+   "price": 745,
+   "type": "Round trip",
+   "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AA.png",
+   "extensions": [
+    "Checked baggage for a fee",
+    "Bag and fare conditions depend on the return flight"
+   ],
+   "departure_token": "WyJDalJJYVdaRmFIaFdjemRUY1hOQlFtWmZOVUZDUnkwdExTMHRMUzB0TFMxMmRHdHBNVUZCUVVGQlIzRnhRVm8wVGpkRU5VdEJFZ1pCUVRJM016VWFDd2pkeFFRUUFob0RWVk5FT0J4dzNjVUUiLFtbIkRUVyIsIjIwMjYtMTItMjgiLCJNSUEiLG51bGwsIkFBIiwiMjczNSJdXV0="
+  },
+  {
+   "flights": [
+    {
+     "departure_airport": {
+      "name": "Detroit Metropolitan Wayne County Airport",
+      "id": "DTW",
+      "time": "2026-12-28 07:05"
+     },
+     "arrival_airport": {
+      "name": "Miami International Airport",
+      "id": "MIA",
+      "time": "2026-12-28 10:25"
+     },
+     "duration": 200,
+     "airplane": "Airbus A321",
+     "airline": "Delta",
+     "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/DL.png",
+     "travel_class": "Economy",
+     "flight_number": "DL 1468",
+     "legroom": "31 in",
+     "extensions": [
+      "Average legroom (31 in)",
+      "Free Wi-Fi",
+      "In-seat power & USB outlets",
+      "Live TV",
+      "Carbon emissions estimate: 174 kg"
+     ]
+    }
+   ],
+   "total_duration": 200,
+   "carbon_emissions": {
+    "this_flight": 174000,
+    "typical_for_this_route": 222000,
+    "difference_percent": -22
+   },
+   "price": 1043,
+   "type": "Round trip",
+   "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/DL.png",
+   "extensions": [
+    "Checked baggage for a fee",
+    "Bag and fare conditions depend on the return flight"
+   ],
+   "departure_token": "WyJDalJJYVdaRmFIaFdjemRUY1hOQlFtWmZOVUZDUnkwdExTMHRMUzB0TFMxMmRHdHBNVUZCUVVGQlIzRnhRVm8wVGpkRU5VdEJFZ1pFVERFME5qZ2FDd2pzcmdZUUFob0RWVk5FT0J4dzdLNEciLFtbIkRUVyIsIjIwMjYtMTItMjgiLCJNSUEiLG51bGwsIkRMIiwiMTQ2OCJdXV0="
+  }
+ ],
+ "other_flights": [
+  {
+   "flights": [
+    {
+     "departure_airport": {
+      "name": "Detroit Metropolitan Wayne County Airport",
+      "id": "DTW",
+      "time": "2026-12-28 14:38"
+     },
+     "arrival_airport": {
+      "name": "Hartsfield-Jackson Atlanta International Airport",
+      "id": "ATL",
+      "time": "2026-12-28 16:52"
+     },
+     "duration": 134,
+     "airplane": "Airbus A321neo",
+     "airline": "Frontier",
+     "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/F9.png",
+     "travel_class": "Economy",
+     "flight_number": "F9 3409",
+     "legroom": "28 in",
+     "extensions": [
+      "Below average legroom (28 in)",
+      "Carbon emissions estimate: 77 kg"
+     ]
+    },
+    {
+     "departure_airport": {
+      "name": "Hartsfield-Jackson Atlanta International Airport",
+      "id": "ATL",
+      "time": "2026-12-28 22:53"
+     },
+     "arrival_airport": {
+      "name": "Miami International Airport",
+      "id": "MIA",
+      "time": "2026-12-29 00:52"
+     },
+     "duration": 119,
+     "airplane": "Airbus A321neo",
+     "airline": "Frontier",
+     "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/F9.png",
+     "travel_class": "Economy",
+     "flight_number": "F9 4406",
+     "legroom": "28 in",
+     "extensions": [
+      "Below average legroom (28 in)",
+      "Carbon emissions estimate: 74 kg"
+     ],
+     "often_delayed_by_over_30_min": true
+    }
+   ],
+   "layovers": [
+    {
+     "duration": 361,
+     "name": "Hartsfield-Jackson Atlanta International Airport",
+     "id": "ATL"
+    }
+   ],
+   "total_duration": 614,
+   "carbon_emissions": {
+    "this_flight": 152000,
+    "typical_for_this_route": 222000,
+    "difference_percent": -32
+   },
+   "price": 575,
+   "type": "Round trip",
+   "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/F9.png",
+   "extensions": [
+    "Checked baggage for a fee",
+    "Bag and fare conditions depend on the return flight"
+   ],
+   "departure_token": "WyJDalJJYVdaRmFIaFdjemRUY1hOQlFtWmZOVUZDUnkwdExTMHRMUzB0TFMxMmRHdHBNVUZCUVVGQlIzRnhRVm8wVGpkRU5VdEJFZzFHT1RNME1EbDhSamswTkRBMkdnc0lnTUVERUFJYUExVlRSRGdjY0lEQkF3PT0iLFtbIkRUVyIsIjIwMjYtMTItMjgiLCJBVEwiLG51bGwsIkY5IiwiMzQwOSJdLFsiQVRMIiwiMjAyNi0xMi0yOCIsIk1JQSIsbnVsbCwiRjkiLCI0NDA2Il1dXQ=="
+  },
+  {
+   "flights": [
+    {
+     "departure_airport": {
+      "name": "Detroit Metropolitan Wayne County Airport",
+      "id": "DTW",
+      "time": "2026-12-28 18:15"
+     },
+     "arrival_airport": {
+      "name": "Chicago O'Hare International Airport",
+      "id": "ORD",
+      "time": "2026-12-28 19:00"
+     },
+     "duration": 105,
+     "airplane": "Embraer 170",
+     "airline": "American",
+     "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AA.png",
+     "travel_class": "Economy",
+     "flight_number": "AA 3936",
+     "legroom": "30 in",
+     "extensions": [
+      "Average legroom (30 in)",
+      "Free Wi-Fi",
+      "In-seat power & USB outlets",
+      "Stream media to your device",
+      "Carbon emissions estimate: 119 kg"
+     ],
+     "plane_and_crew_by": "Envoy Air as American Eagle"
+    },
+    {
+     "departure_airport": {
+      "name": "Chicago O'Hare International Airport",
+      "id": "ORD",
+      "time": "2026-12-28 20:00"
+     },
+     "arrival_airport": {
+      "name": "Miami International Airport",
+      "id": "MIA",
+      "time": "2026-12-29 00:16"
+     },
+     "duration": 196,
+     "airplane": "Boeing 737",
+     "airline": "American",
+     "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AA.png",
+     "travel_class": "Economy",
+     "flight_number": "AA 3300",
+     "legroom": "30 in",
+     "extensions": [
+      "Average legroom (30 in)",
+      "Free Wi-Fi",
+      "In-seat power & USB outlets",
+      "Stream media to your device",
+      "Carbon emissions estimate: 166 kg"
+     ]
+    }
+   ],
+   "layovers": [
+    {
+     "duration": 60,
+     "name": "Chicago O'Hare International Airport",
+     "id": "ORD"
+    }
+   ],
+   "total_duration": 361,
+   "carbon_emissions": {
+    "this_flight": 286000,
+    "typical_for_this_route": 222000,
+    "difference_percent": 29
+   },
+   "price": 646,
+   "type": "Round trip",
+   "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AA.png",
+   "extensions": [
+    "Checked baggage for a fee",
+    "Bag and fare conditions depend on the return flight"
+   ],
+   "departure_token": "WyJDalJJYVdaRmFIaFdjemRUY1hOQlFtWmZOVUZDUnkwdExTMHRMUzB0TFMxMmRHdHBNVUZCUVVGQlIzRnhRVm8wVGpkRU5VdEJFZzFCUVRNNU16WjhRVUV6TXpBd0dnc0luUGdERUFJYUExVlRSRGdjY0p6NEF3PT0iLFtbIkRUVyIsIjIwMjYtMTItMjgiLCJPUkQiLG51bGwsIkFBIiwiMzkzNiJdLFsiT1JEIiwiMjAyNi0xMi0yOCIsIk1JQSIsbnVsbCwiQUEiLCIzMzAwIl1dXQ=="
+  },
+  {
+   "flights": [
+    {
+     "departure_airport": {
+      "name": "Detroit Metropolitan Wayne County Airport",
+      "id": "DTW",
+      "time": "2026-12-28 13:48"
+     },
+     "arrival_airport": {
+      "name": "Charlotte Douglas International Airport",
+      "id": "CLT",
+      "time": "2026-12-28 15:52"
+     },
+     "duration": 124,
+     "airplane": "Canadair RJ 900",
+     "airline": "American",
+     "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AA.png",
+     "travel_class": "Economy",
+     "flight_number": "AA 5415",
+     "legroom": "31 in",
+     "extensions": [
+      "Average legroom (31 in)",
+      "Wi-Fi for a fee",
+      "In-seat power & USB outlets",
+      "Stream media to your device",
+      "Carbon emissions estimate: 154 kg"
+     ],
+     "plane_and_crew_by": "PSA Airlines as American Eagle"
+    },
+    {
+     "departure_airport": {
+      "name": "Charlotte Douglas International Airport",
+      "id": "CLT",
+      "time": "2026-12-28 16:30"
+     },
+     "arrival_airport": {
+      "name": "Miami International Airport",
+      "id": "MIA",
+      "time": "2026-12-28 18:46"
+     },
+     "duration": 136,
+     "airplane": "Boeing 777",
+     "airline": "American",
+     "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AA.png",
+     "travel_class": "Economy",
+     "flight_number": "AA 574",
+     "legroom": "31 in",
+     "extensions": [
+      "Average legroom (31 in)",
+      "Wi-Fi for a fee",
+      "In-seat power & USB outlets",
+      "On-demand video",
+      "Carbon emissions estimate: 105 kg"
+     ]
+    }
+   ],
+   "layovers": [
+    {
+     "duration": 38,
+     "name": "Charlotte Douglas International Airport",
+     "id": "CLT"
+    }
+   ],
+   "total_duration": 298,
+   "carbon_emissions": {
+    "this_flight": 260000,
+    "typical_for_this_route": 222000,
+    "difference_percent": 17
+   },
+   "price": 701,
+   "type": "Round trip",
+   "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AA.png",
+   "extensions": [
+    "Checked baggage for a fee",
+    "Bag and fare conditions depend on the return flight"
+   ],
+   "departure_token": "WyJDalJJYVdaRmFIaFdjemRUY1hOQlFtWmZOVUZDUnkwdExTMHRMUzB0TFMxMmRHdHBNVUZCUVVGQlIzRnhRVm8wVGpkRU5VdEJFZ3hCUVRVME1UVjhRVUUxTnpRYUN3aVlvd1FRQWhvRFZWTkVPQnh3bUtNRSIsW1siRFRXIiwiMjAyNi0xMi0yOCIsIkNMVCIsbnVsbCwiQUEiLCI1NDE1Il0sWyJDTFQiLCIyMDI2LTEyLTI4IiwiTUlBIixudWxsLCJBQSIsIjU3NCJdXV0="
+  },
+  {
+   "flights": [
+    {
+     "departure_airport": {
+      "name": "Detroit Metropolitan Wayne County Airport",
+      "id": "DTW",
+      "time": "2026-12-28 08:00"
+     },
+     "arrival_airport": {
+      "name": "Chicago O'Hare International Airport",
+      "id": "ORD",
+      "time": "2026-12-28 08:48"
+     },
+     "duration": 108,
+     "airplane": "Embraer 170",
+     "airline": "American",
+     "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AA.png",
+     "travel_class": "Economy",
+     "flight_number": "AA 3513",
+     "legroom": "30 in",
+     "extensions": [
+      "Average legroom (30 in)",
+      "Free Wi-Fi",
+      "In-seat power & USB outlets",
+      "Stream media to your device",
+      "Carbon emissions estimate: 119 kg"
+     ],
+     "plane_and_crew_by": "Envoy Air as American Eagle"
+    },
+    {
+     "departure_airport": {
+      "name": "Chicago O'Hare International Airport",
+      "id": "ORD",
+      "time": "2026-12-28 10:04"
+     },
+     "arrival_airport": {
+      "name": "Miami International Airport",
+      "id": "MIA",
+      "time": "2026-12-28 14:28"
+     },
+     "duration": 204,
+     "airplane": "Boeing 737",
+     "airline": "American",
+     "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AA.png",
+     "travel_class": "Economy",
+     "flight_number": "AA 2033",
+     "legroom": "30 in",
+     "extensions": [
+      "Average legroom (30 in)",
+      "Free Wi-Fi",
+      "In-seat power & USB outlets",
+      "Stream media to your device",
+      "Carbon emissions estimate: 166 kg"
+     ]
+    }
+   ],
+   "layovers": [
+    {
+     "duration": 76,
+     "name": "Chicago O'Hare International Airport",
+     "id": "ORD"
+    }
+   ],
+   "total_duration": 388,
+   "carbon_emissions": {
+    "this_flight": 286000,
+    "typical_for_this_route": 222000,
+    "difference_percent": 29
+   },
+   "price": 755,
+   "type": "Round trip",
+   "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AA.png",
+   "extensions": [
+    "Checked baggage for a fee",
+    "Bag and fare conditions depend on the return flight"
+   ],
+   "departure_token": "WyJDalJJYVdaRmFIaFdjemRUY1hOQlFtWmZOVUZDUnkwdExTMHRMUzB0TFMxMmRHdHBNVUZCUVVGQlIzRnhRVm8wVGpkRU5VdEJFZzFCUVRNMU1UTjhRVUV5TURNekdnc0lzYzBFRUFJYUExVlRSRGdjY0xITkJBPT0iLFtbIkRUVyIsIjIwMjYtMTItMjgiLCJPUkQiLG51bGwsIkFBIiwiMzUxMyJdLFsiT1JEIiwiMjAyNi0xMi0yOCIsIk1JQSIsbnVsbCwiQUEiLCIyMDMzIl1dXQ=="
+  },
+  {
+   "flights": [
+    {
+     "departure_airport": {
+      "name": "Detroit Metropolitan Wayne County Airport",
+      "id": "DTW",
+      "time": "2026-12-28 19:37"
+     },
+     "arrival_airport": {
+      "name": "Charlotte Douglas International Airport",
+      "id": "CLT",
+      "time": "2026-12-28 21:44"
+     },
+     "duration": 127,
+     "airplane": "Canadair RJ 900",
+     "airline": "American",
+     "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AA.png",
+     "travel_class": "Economy",
+     "flight_number": "AA 5585",
+     "legroom": "31 in",
+     "extensions": [
+      "Average legroom (31 in)",
+      "Wi-Fi for a fee",
+      "In-seat power & USB outlets",
+      "Stream media to your device",
+      "Carbon emissions estimate: 154 kg"
+     ],
+     "plane_and_crew_by": "PSA Airlines as American Eagle"
+    },
+    {
+     "departure_airport": {
+      "name": "Charlotte Douglas International Airport",
+      "id": "CLT",
+      "time": "2026-12-28 22:28"
+     },
+     "arrival_airport": {
+      "name": "Miami International Airport",
+      "id": "MIA",
+      "time": "2026-12-29 00:36"
+     },
+     "duration": 128,
+     "airplane": "Boeing 737",
+     "airline": "American",
+     "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AA.png",
+     "travel_class": "Economy",
+     "flight_number": "AA 2921",
+     "legroom": "30 in",
+     "extensions": [
+      "Average legroom (30 in)",
+      "Free Wi-Fi",
+      "In-seat power & USB outlets",
+      "Stream media to your device",
+      "Carbon emissions estimate: 106 kg"
+     ]
+    }
+   ],
+   "layovers": [
+    {
+     "duration": 44,
+     "name": "Charlotte Douglas International Airport",
+     "id": "CLT"
+    }
+   ],
+   "total_duration": 299,
+   "carbon_emissions": {
+    "this_flight": 261000,
+    "typical_for_this_route": 222000,
+    "difference_percent": 18
+   },
+   "price": 755,
+   "type": "Round trip",
+   "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AA.png",
+   "extensions": [
+    "Checked baggage for a fee",
+    "Bag and fare conditions depend on the return flight"
+   ],
+   "departure_token": "WyJDalJJYVdaRmFIaFdjemRUY1hOQlFtWmZOVUZDUnkwdExTMHRMUzB0TFMxMmRHdHBNVUZCUVVGQlIzRnhRVm8wVGpkRU5VdEJFZzFCUVRVMU9EVjhRVUV5T1RJeEdnc0lzYzBFRUFJYUExVlRSRGdjY0xITkJBPT0iLFtbIkRUVyIsIjIwMjYtMTItMjgiLCJDTFQiLG51bGwsIkFBIiwiNTU4NSJdLFsiQ0xUIiwiMjAyNi0xMi0yOCIsIk1JQSIsbnVsbCwiQUEiLCIyOTIxIl1dXQ=="
+  },
+  {
+   "flights": [
+    {
+     "departure_airport": {
+      "name": "Detroit Metropolitan Wayne County Airport",
+      "id": "DTW",
+      "time": "2026-12-28 14:45"
+     },
+     "arrival_airport": {
+      "name": "Miami International Airport",
+      "id": "MIA",
+      "time": "2026-12-28 18:05"
+     },
+     "duration": 200,
+     "airplane": "Boeing 737",
+     "airline": "Delta",
+     "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/DL.png",
+     "travel_class": "Economy",
+     "flight_number": "DL 1733",
+     "legroom": "31 in",
+     "extensions": [
+      "Average legroom (31 in)",
+      "Free Wi-Fi",
+      "In-seat power & USB outlets",
+      "Live TV",
+      "Carbon emissions estimate: 162 kg"
+     ]
+    }
+   ],
+   "total_duration": 200,
+   "carbon_emissions": {
+    "this_flight": 163000,
+    "typical_for_this_route": 222000,
+    "difference_percent": -27
+   },
+   "price": 1043,
+   "type": "Round trip",
+   "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/DL.png",
+   "extensions": [
+    "Checked baggage for a fee",
+    "Bag and fare conditions depend on the return flight"
+   ],
+   "departure_token": "WyJDalJJYVdaRmFIaFdjemRUY1hOQlFtWmZOVUZDUnkwdExTMHRMUzB0TFMxMmRHdHBNVUZCUVVGQlIzRnhRVm8wVGpkRU5VdEJFZ1pFVERFM016TWFDd2pzcmdZUUFob0RWVk5FT0J4dzdLNEciLFtbIkRUVyIsIjIwMjYtMTItMjgiLCJNSUEiLG51bGwsIkRMIiwiMTczMyJdXV0="
+  },
+  {
+   "flights": [
+    {
+     "departure_airport": {
+      "name": "Detroit Metropolitan Wayne County Airport",
+      "id": "DTW",
+      "time": "2026-12-28 18:15"
+     },
+     "arrival_airport": {
+      "name": "Miami International Airport",
+      "id": "MIA",
+      "time": "2026-12-28 21:26"
+     },
+     "duration": 191,
+     "airplane": "Boeing 737",
+     "airline": "Delta",
+     "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/DL.png",
+     "travel_class": "Economy",
+     "flight_number": "DL 2548",
+     "legroom": "31 in",
+     "extensions": [
+      "Average legroom (31 in)",
+      "Free Wi-Fi",
+      "In-seat power & USB outlets",
+      "Live TV",
+      "Carbon emissions estimate: 162 kg"
+     ]
+    }
+   ],
+   "total_duration": 191,
+   "carbon_emissions": {
+    "this_flight": 163000,
+    "typical_for_this_route": 222000,
+    "difference_percent": -27
+   },
+   "price": 1043,
+   "type": "Round trip",
+   "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/DL.png",
+   "extensions": [
+    "Checked baggage for a fee",
+    "Bag and fare conditions depend on the return flight"
+   ],
+   "departure_token": "WyJDalJJYVdaRmFIaFdjemRUY1hOQlFtWmZOVUZDUnkwdExTMHRMUzB0TFMxMmRHdHBNVUZCUVVGQlIzRnhRVm8wVGpkRU5VdEJFZ1pFVERJMU5EZ2FDd2pzcmdZUUFob0RWVk5FT0J4dzdLNEciLFtbIkRUVyIsIjIwMjYtMTItMjgiLCJNSUEiLG51bGwsIkRMIiwiMjU0OCJdXV0="
+  },
+  {
+   "flights": [
+    {
+     "departure_airport": {
+      "name": "Detroit Metropolitan Wayne County Airport",
+      "id": "DTW",
+      "time": "2026-12-28 10:00"
+     },
+     "arrival_airport": {
+      "name": "Miami International Airport",
+      "id": "MIA",
+      "time": "2026-12-28 13:12"
+     },
+     "duration": 192,
+     "airplane": "Boeing 737",
+     "airline": "Delta",
+     "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/DL.png",
+     "travel_class": "Economy",
+     "flight_number": "DL 1715",
+     "legroom": "31 in",
+     "extensions": [
+      "Average legroom (31 in)",
+      "Free Wi-Fi",
+      "In-seat power & USB outlets",
+      "Live TV",
+      "Carbon emissions estimate: 162 kg"
+     ]
+    }
+   ],
+   "total_duration": 192,
+   "carbon_emissions": {
+    "this_flight": 163000,
+    "typical_for_this_route": 222000,
+    "difference_percent": -27
+   },
+   "price": 1253,
+   "type": "Round trip",
+   "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/DL.png",
+   "extensions": [
+    "Checked baggage for a fee",
+    "Bag and fare conditions depend on the return flight"
+   ],
+   "departure_token": "WyJDalJJYVdaRmFIaFdjemRUY1hOQlFtWmZOVUZDUnkwdExTMHRMUzB0TFMxMmRHdHBNVUZCUVVGQlIzRnhRVm8wVGpkRU5VdEJFZ1pFVERFM01UVWFDd2owMGdjUUFob0RWVk5FT0J4dzlOSUgiLFtbIkRUVyIsIjIwMjYtMTItMjgiLCJNSUEiLG51bGwsIkRMIiwiMTcxNSJdXV0="
+  },
+  {
+   "flights": [
+    {
+     "departure_airport": {
+      "name": "Detroit Metropolitan Wayne County Airport",
+      "id": "DTW",
+      "time": "2026-12-28 17:40"
+     },
+     "arrival_airport": {
+      "name": "Hartsfield-Jackson Atlanta International Airport",
+      "id": "ATL",
+      "time": "2026-12-28 19:48"
+     },
+     "duration": 128,
+     "airplane": "Boeing 737",
+     "airline": "Delta",
+     "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/DL.png",
+     "travel_class": "Economy",
+     "flight_number": "DL 2053",
+     "legroom": "31 in",
+     "extensions": [
+      "Average legroom (31 in)",
+      "Free Wi-Fi",
+      "In-seat power & USB outlets",
+      "Live TV",
+      "Carbon emissions estimate: 106 kg"
+     ],
+     "often_delayed_by_over_30_min": true
+    },
+    {
+     "departure_airport": {
+      "name": "Hartsfield-Jackson Atlanta International Airport",
+      "id": "ATL",
+      "time": "2026-12-28 20:45"
+     },
+     "arrival_airport": {
+      "name": "Miami International Airport",
+      "id": "MIA",
+      "time": "2026-12-28 22:42"
+     },
+     "duration": 117,
+     "airplane": "Boeing 757",
+     "airline": "Delta",
+     "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/DL.png",
+     "travel_class": "Economy",
+     "flight_number": "DL 1234",
+     "legroom": "31 in",
+     "extensions": [
+      "Average legroom (31 in)",
+      "Free Wi-Fi",
+      "In-seat power & USB outlets",
+      "Live TV",
+      "Carbon emissions estimate: 129 kg"
+     ],
+     "often_delayed_by_over_30_min": true
+    }
+   ],
+   "layovers": [
+    {
+     "duration": 57,
+     "name": "Hartsfield-Jackson Atlanta International Airport",
+     "id": "ATL"
+    }
+   ],
+   "total_duration": 302,
+   "carbon_emissions": {
+    "this_flight": 236000,
+    "typical_for_this_route": 222000,
+    "difference_percent": 6
+   },
+   "price": 1457,
+   "type": "Round trip",
+   "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/DL.png",
+   "extensions": [
+    "Checked baggage for a fee",
+    "Bag and fare conditions depend on the return flight"
+   ],
+   "departure_token": "WyJDalJJYVdaRmFIaFdjemRUY1hOQlFtWmZOVUZDUnkwdExTMHRMUzB0TFMxMmRHdHBNVUZCUVVGQlIzRnhRVm8wVGpkRU5VdEJFZzFFVERJd05UTjhSRXd4TWpNMEdnc0krL0VJRUFJYUExVlRSRGdjY1B2eENBPT0iLFtbIkRUVyIsIjIwMjYtMTItMjgiLCJBVEwiLG51bGwsIkRMIiwiMjA1MyJdLFsiQVRMIiwiMjAyNi0xMi0yOCIsIk1JQSIsbnVsbCwiREwiLCIxMjM0Il1dXQ=="
+  }
+ ],
+ "price_insights": {
+  "lowest_price": 512,
+  "price_level": "high",
+  "typical_price_range": [
+   115,
+   330
+  ],
+  "price_history": [
+   [
+    1784260800,
+    511
+   ],
+   [
+    1784347200,
+    511
+   ],
+   [
+    1784433600,
+    495
+   ],
+   [
+    1784520000,
+    495
+   ],
+   [
+    1784606400,
+    500
+   ],
+   [
+    1784692800,
+    505
+   ],
+   [
+    1784779200,
+    521
+   ],
+   [
+    1784865600,
+    526
+   ],
+   [
+    1784952000,
+    526
+   ],
+   [
+    1785038400,
+    484
+   ],
+   [
+    1785124800,
+    516
+   ],
+   [
+    1785211200,
+    474
+   ],
+   [
+    1785297600,
+    526
+   ],
+   [
+    1785384000,
+    506
+   ],
+   [
+    1785470400,
+    506
+   ],
+   [
+    1785556800,
+    533
+   ],
+   [
+    1785643200,
+    566
+   ],
+   [
+    1785729600,
+    545
+   ],
+   [
+    1785816000,
+    585
+   ],
+   [
+    1785902400,
+    585
+   ],
+   [
+    1785988800,
+    545
+   ],
+   [
+    1786075200,
+    566
+   ],
+   [
+    1786161600,
+    616
+   ],
+   [
+    1786248000,
+    616
+   ],
+   [
+    1786334400,
+    616
+   ],
+   [
+    1786420800,
+    551
+   ],
+   [
+    1786507200,
+    543
+   ],
+   [
+    1786593600,
+    543
+   ],
+   [
+    1786680000,
+    553
+   ],
+   [
+    1786766400,
+    626
+   ],
+   [
+    1786852800,
+    626
+   ],
+   [
+    1786939200,
+    713
+   ],
+   [
+    1787025600,
+    713
+   ],
+   [
+    1787112000,
+    713
+   ],
+   [
+    1787198400,
+    640
+   ],
+   [
+    1787284800,
+    724
+   ],
+   [
+    1787371200,
+    641
+   ],
+   [
+    1787457600,
+    714
+   ],
+   [
+    1787544000,
+    714
+   ],
+   [
+    1787630400,
+    644
+   ],
+   [
+    1787716800,
+    614
+   ],
+   [
+    1787803200,
+    614
+   ],
+   [
+    1787889600,
+    614
+   ],
+   [
+    1787976000,
+    614
+   ],
+   [
+    1788062400,
+    614
+   ],
+   [
+    1788148800,
+    614
+   ],
+   [
+    1788235200,
+    744
+   ],
+   [
+    1788321600,
+    591
+   ],
+   [
+    1788408000,
+    591
+   ],
+   [
+    1788494400,
+    591
+   ],
+   [
+    1788580800,
+    591
+   ],
+   [
+    1788667200,
+    591
+   ],
+   [
+    1788753600,
+    591
+   ],
+   [
+    1788840000,
+    530
+   ],
+   [
+    1788926400,
+    530
+   ],
+   [
+    1789012800,
+    560
+   ],
+   [
+    1789099200,
+    550
+   ],
+   [
+    1789185600,
+    550
+   ],
+   [
+    1789272000,
+    550
+   ],
+   [
+    1789358400,
+    497
+   ],
+   [
+    1789444800,
+    512
+   ]
+  ]
+ },
+ "airports": [
+  {
+   "departure": [
+    {
+     "airport": {
+      "id": "DTW",
+      "name": "Detroit Metropolitan Wayne County Airport"
+     },
+     "city": "Detroit",
+     "country": "United States",
+     "country_code": "US",
+     "image": "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcQ6tCKi37Y2EFKBit2BFOdzMPDMIOPD61N33bJ6TPBfGhdv-qnbRdXODK9GFZ4072j7q-CnrkO_vQFBTQ",
+     "thumbnail": "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcSLzktjJPbJWpjXl1ZSYRz56GZ46-c_yoPIjxNBooT6XhL3kRcO9Hgj4d61TOWWofyftp77t-Xphkog3mdEoWczq1_BbvKctQL77uK5nC0"
+    }
+   ],
+   "arrival": [
+    {
+     "airport": {
+      "id": "MIA",
+      "name": "Miami International Airport"
+     },
+     "city": "Miami",
+     "country": "United States",
+     "country_code": "US",
+     "image": "https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcRjsG6ybk9C2oSVnPZUal-6l7EimKLf5gtMAhOumgD16nXBwB4X0lHH3nh-178HKbonabZtnDMdZKfDEQ",
+     "thumbnail": "https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcRScvUK_JtYRXmQWoXHiT98Ajl1KTuUVO40d0Q678OpK1xyyWI8VIkHqzXE9BHfY5R35UpgbeEdcf1IhMDncXwDo29wOABY9MIUzCFLkwU"
+    }
+   ]
+  },
+  {
+   "departure": [
+    {
+     "airport": {
+      "id": "MIA",
+      "name": "Miami International Airport"
+     },
+     "city": "Miami",
+     "country": "United States",
+     "country_code": "US",
+     "image": "https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcRjsG6ybk9C2oSVnPZUal-6l7EimKLf5gtMAhOumgD16nXBwB4X0lHH3nh-178HKbonabZtnDMdZKfDEQ",
+     "thumbnail": "https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcRScvUK_JtYRXmQWoXHiT98Ajl1KTuUVO40d0Q678OpK1xyyWI8VIkHqzXE9BHfY5R35UpgbeEdcf1IhMDncXwDo29wOABY9MIUzCFLkwU"
+    }
+   ],
+   "arrival": [
+    {
+     "airport": {
+      "id": "DTW",
+      "name": "Detroit Metropolitan Wayne County Airport"
+     },
+     "city": "Detroit",
+     "country": "United States",
+     "country_code": "US",
+     "image": "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcQ6tCKi37Y2EFKBit2BFOdzMPDMIOPD61N33bJ6TPBfGhdv-qnbRdXODK9GFZ4072j7q-CnrkO_vQFBTQ",
+     "thumbnail": "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcSLzktjJPbJWpjXl1ZSYRz56GZ46-c_yoPIjxNBooT6XhL3kRcO9Hgj4d61TOWWofyftp77t-Xphkog3mdEoWczq1_BbvKctQL77uK5nC0"
+    }
+   ]
+  }
+ ]
+}
