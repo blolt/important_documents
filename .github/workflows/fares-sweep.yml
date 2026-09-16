@@ -31,17 +31,36 @@ jobs:
   sweep:
     runs-on: ubuntu-latest
     steps:
+      - name: Check credentials
+        id: creds
+        # A scheduled run with no SERPAPI_KEY would fail every two hours and
+        # email a red X each time. Skip cleanly instead; a dry run never
+        # needs the key.
+        env:
+          SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
+        run: |
+          if [ "${{ inputs.dry_run }}" = "true" ] || [ -n "$SERPAPI_KEY" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::SERPAPI_KEY secret not set - sweep skipped (see flight-alerts/README.md)"
+            echo "## Sweep skipped: SERPAPI_KEY secret not set" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
       - uses: actions/checkout@v4
+        if: steps.creds.outputs.ready == 'true'
         with:
           # Full history so the data branch can be fetched and pushed to
           # without hitting shallow-update restrictions.
           fetch-depth: 0
 
       - uses: actions/setup-python@v5
+        if: steps.creds.outputs.ready == 'true'
         with:
           python-version: '3.11'
 
       - name: Restore the panel from the data branch
+        if: steps.creds.outputs.ready == 'true'
         # Observations live on a dedicated branch: ~1,300 automated commits
         # by NYE have no business in the code history.
         run: |
@@ -63,6 +82,7 @@ jobs:
           fi
 
       - name: Sweep
+        if: steps.creds.outputs.ready == 'true'
         working-directory: flight-alerts
         env:
           FARES_DATA_DIR: ${{ runner.temp }}/panel/data
@@ -79,13 +99,14 @@ jobs:
           PYTHONPATH=src python -m fares sweep $ARGS
 
       - name: Summarize
+        if: steps.creds.outputs.ready == 'true'
         working-directory: flight-alerts
         env:
           FARES_DATA_DIR: ${{ runner.temp }}/panel/data
         run: PYTHONPATH=src python -m fares status >> "$GITHUB_STEP_SUMMARY"
 
       - name: Publish the panel
-        if: ${{ inputs.dry_run != true }}
+        if: steps.creds.outputs.ready == 'true' && inputs.dry_run != true
         run: |
           PANEL="${RUNNER_TEMP}/panel"
           if [ ! -d "$PANEL/data" ]; then
